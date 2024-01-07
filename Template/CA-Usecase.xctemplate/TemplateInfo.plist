@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>SupportsSwiftPackage</key>
+	<true/>
+	<key>Kind</key>
+	<string>Xcode.IDEFoundation.TextSubstitutionFileTemplateKind</string>
+	<key>Description</key>
+	<string>Create repository template</string>
+	<key>Summary</key>
+	<string>An empty Swift file</string>
+	<key>SortOrder</key>
+	<string>1</string>
+	<key>Options</key>
+	<array>
+		<dict>
+			<key>Description</key>
+			<string>The name of the module to create.</string>
+			<key>Identifier</key>
+			<string>ModuleName</string>
+			<key>Name</key>
+			<string>Usecase Name:</string>
+			<key>NotPersisted</key>
+			<true/>
+			<key>Required</key>
+			<true/>
+			<key>Type</key>
+			<string>text</string>
+		</dict>
+		<dict>
+			<key>Default</key>
+			<string>___VARIABLE_ModuleName:identifier___</string>
+			<key>Identifier</key>
+			<string>productName</string>
+			<key>Type</key>
+			<string>static</string>
+		</dict>
+	</array>
+	<key>Image</key>
+	<dict>
+		<key>FileTypeIcon</key>
+		<string>swift</string>
+	</dict>
+	<key>AllowedTypes</key>
+	<array>
+		<string>public.swift-source</string>
+	</array>
+	<key>Platforms</key>
+	<array>
+		<string>com.apple.platform.iphoneos</string>
+	</array>
+	<key>DefaultCompletionName</key>
+	<string>Repository</string>
+	<key>MainTemplateFile</key>
+	<string>___FILEBASENAME___.swift</string>
+</dict>
+</plist>

@@ -25,9 +25,19 @@ public struct StringifyMacro: ExpressionMacro {
     }
 }
 
+public struct EndpointMacro: MemberMacro {
+    
+    public static func expansion(of node: SwiftSyntax.AttributeSyntax, 
+                                 providingMembersOf declaration: some SwiftSyntax.DeclGroupSyntax,
+                                 in context: some SwiftSyntaxMacros.MacroExpansionContext) throws -> [SwiftSyntax.DeclSyntax] {
+        return []
+    }
+}
+
 @main
 struct LCToolPlugin: CompilerPlugin {
     let providingMacros: [Macro.Type] = [
         StringifyMacro.self,
+        EndpointMacro.self
     ]
 }
