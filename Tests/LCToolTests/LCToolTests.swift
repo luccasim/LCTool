@@ -8,10 +8,32 @@ import LCToolMacros
 
 let testMacros: [String: Macro.Type] = [
     "stringify": StringifyMacro.self,
+    "Endpoint": EndpointMacro.self
 ]
 #endif
 
 final class LCToolTests: XCTestCase {
+    
+    func testEndpoint() throws {
+        assertMacroExpansion(
+            """
+            @Endpoint
+            struct TestEndpoint: Codable {
+                var httpHeader: [String: String] = [:]
+            }
+            """,
+            expandedSource: """
+            
+            struct TestEndpoint: Codable {
+                var httpHeader: [String: String] = [:]
+            
+                typealias Response = TestResponse
+            }
+            """,
+            macros: testMacros
+        )
+    }
+    
     func testMacro() throws {
         #if canImport(LCToolMacros)
         assertMacroExpansion(

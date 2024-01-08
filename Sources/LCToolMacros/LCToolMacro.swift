@@ -29,8 +29,18 @@ public struct EndpointMacro: MemberMacro {
     
     public static func expansion(of node: SwiftSyntax.AttributeSyntax, 
                                  providingMembersOf declaration: some SwiftSyntax.DeclGroupSyntax,
-                                 in context: some SwiftSyntaxMacros.MacroExpansionContext) throws -> [SwiftSyntax.DeclSyntax] {
-        return []
+                                 in context: some SwiftSyntaxMacros.MacroExpansionContext) 
+    throws -> [SwiftSyntax.DeclSyntax] {
+        guard let structDecl = declaration.as(StructDeclSyntax.self) else {
+            return []
+        }
+        
+        let identifier = structDecl.name.text.replacingOccurrences(of: "Endpoint", with: "")
+        
+        let initializerClauseDecl = TypeInitializerClauseSyntax(value: TypeSyntax(stringLiteral: "\(identifier)Response"))
+        let typeAliasDecl = TypeAliasDeclSyntax(name: "Response", initializer: initializerClauseDecl)
+        
+        return [DeclSyntax(typeAliasDecl)]
     }
 }
 

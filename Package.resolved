@@ -1,6 +1,15 @@
 {
   "pins" : [
     {
+      "identity" : "lclib",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/luccasim/LCLib",
+      "state" : {
+        "revision" : "8c55bb4e2ab0ca490724fdd60acc34aeda22384d",
+        "version" : "1.0.1"
+      }
+    },
+    {
       "identity" : "swift-syntax",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-syntax.git",
