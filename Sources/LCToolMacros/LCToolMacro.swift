@@ -25,7 +25,72 @@ public struct StringifyMacro: ExpressionMacro {
     }
 }
 
-public struct EndpointMacro: MemberMacro {
+public struct EndpointMacro: MemberMacro, ExtensionMacro {
+    
+    public static func expansion(of node: SwiftSyntax.AttributeSyntax, 
+                                 providingPeersOf declaration: some SwiftSyntax.DeclSyntaxProtocol,
+                                 in context: some SwiftSyntaxMacros.MacroExpansionContext)
+    throws -> [SwiftSyntax.DeclSyntax] {
+        guard let structDecl = declaration.as(StructDeclSyntax.self) else {
+            return []
+        }
+        
+        let identifier = structDecl.name.text.replacingOccurrences(of: "Endpoint", with: "")
+        
+        let sendableExtension: DeclSyntax =
+          """
+          extension \(raw: structDecl.name.text): EndpointProtocol {
+              typealias Response = \(raw: identifier)Response
+          }
+          """
+
+        guard let extensionDecl = sendableExtension.as(ExtensionDeclSyntax.self) else {
+          return []
+        }
+
+//        let extensionDecl = try ExtensionDeclSyntax("Test") {
+//            let initializerClauseDecl = TypeInitializerClauseSyntax(value: TypeSyntax(stringLiteral: "\(identifier)Response"))
+//            let typeAliasDecl = TypeAliasDeclSyntax(name: "Response", initializer: initializerClauseDecl)
+//        }
+        
+        return [DeclSyntax(extensionDecl)]
+    }
+    
+    
+    public static func expansion(of node: SwiftSyntax.AttributeSyntax, 
+                                 attachedTo declaration: some SwiftSyntax.DeclGroupSyntax,
+                                 providingExtensionsOf type: some SwiftSyntax.TypeSyntaxProtocol,
+                                 conformingTo protocols: [SwiftSyntax.TypeSyntax],
+                                 in context: some SwiftSyntaxMacros.MacroExpansionContext)
+    throws -> [SwiftSyntax.ExtensionDeclSyntax] {
+        guard let structDecl = declaration.as(StructDeclSyntax.self) else {
+            return []
+        }
+        
+        let identifier = structDecl.name.text.replacingOccurrences(of: "Endpoint", with: "")
+        
+        let sendableExtension: DeclSyntax =
+          """
+          extension \(raw: structDecl.name.text): EndpointProtocol {
+              typealias Response = \(raw: identifier)Response
+          }
+          """
+
+        guard let extensionDecl = sendableExtension.as(ExtensionDeclSyntax.self) else {
+          return []
+        }
+
+//        let extensionDecl = try ExtensionDeclSyntax("Test") {
+//            let initializerClauseDecl = TypeInitializerClauseSyntax(value: TypeSyntax(stringLiteral: "\(identifier)Response"))
+//            let typeAliasDecl = TypeAliasDeclSyntax(name: "Response", initializer: initializerClauseDecl)
+//        }
+        
+        return [extensionDecl]
+        
+//        return []
+    }
+    
+    
     
     public static func expansion(of node: SwiftSyntax.AttributeSyntax, 
                                  providingMembersOf declaration: some SwiftSyntax.DeclGroupSyntax,
@@ -34,13 +99,13 @@ public struct EndpointMacro: MemberMacro {
         guard let structDecl = declaration.as(StructDeclSyntax.self) else {
             return []
         }
-        
-        let identifier = structDecl.name.text.replacingOccurrences(of: "Endpoint", with: "")
-        
-        let initializerClauseDecl = TypeInitializerClauseSyntax(value: TypeSyntax(stringLiteral: "\(identifier)Response"))
-        let typeAliasDecl = TypeAliasDeclSyntax(name: "Response", initializer: initializerClauseDecl)
-        
-        return [DeclSyntax(typeAliasDecl)]
+        return []
+//        let identifier = structDecl.name.text.replacingOccurrences(of: "Endpoint", with: "")
+//        
+//        let initializerClauseDecl = TypeInitializerClauseSyntax(value: TypeSyntax(stringLiteral: "\(identifier)Response"))
+//        let typeAliasDecl = TypeAliasDeclSyntax(name: "Response", initializer: initializerClauseDecl)
+//        
+//        return [DeclSyntax(typeAliasDecl)]
     }
 }
 
