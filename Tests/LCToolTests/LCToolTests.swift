@@ -9,11 +9,61 @@ import LCToolMacros
 
 let testMacros: [String: Macro.Type] = [
     "stringify": StringifyMacro.self,
-    "Endpoint": EndpointMacro.self
+    "Endpoint": EndpointMacro.self,
+    "Repository": RepositoryMacro.self
 ]
 #endif
 
 final class LCToolTests: XCTestCase {
+    
+    func testRepository() throws {
+        assertMacroExpansion(
+            """
+            @Repository
+            final class TestRepository: TestRepositoryProtocol {
+                    
+                private func fetchEndpoint(dto: TestDTO) async throws -> TestDTO {
+                    dto
+                }
+                    
+                private func fetch(dto: TestDTO) async throws -> TestDTO {
+                    do {
+                        return try await fetchEndpoint(dto: dto)
+                    } catch let error {
+                        throw error
+                    }
+                }
+            }
+            """,
+            expandedSource: 
+            """
+            
+            final class TestRepository: TestRepositoryProtocol {
+                    
+                private func fetchEndpoint(dto: TestDTO) async throws -> TestDTO {
+                    dto
+                }
+                    
+                private func fetch(dto: TestDTO) async throws -> TestDTO {
+                    do {
+                        return try await fetchEndpoint(dto: dto)
+                    } catch let error {
+                        throw error
+                    }
+                }
+            
+                var store = CAStoreManager.shared
+                var webservice = CAURLSessionManager()
+            
+                func dataTaskAsync(dto: TestDTO, options: [CAUsecaseOption]) async throws -> TestDTO {
+                    webservice.set(options: options)
+                    return try await fetch(dto: dto)
+                }
+            }
+            """,
+            macros: testMacros
+        )
+    }
     
     func testEndpoint() throws {
         assertMacroExpansion(

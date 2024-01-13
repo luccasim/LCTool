@@ -25,37 +25,7 @@ public struct StringifyMacro: ExpressionMacro {
     }
 }
 
-public struct EndpointMacro: MemberMacro, ExtensionMacro {
-    
-    public static func expansion(of node: SwiftSyntax.AttributeSyntax, 
-                                 providingPeersOf declaration: some SwiftSyntax.DeclSyntaxProtocol,
-                                 in context: some SwiftSyntaxMacros.MacroExpansionContext)
-    throws -> [SwiftSyntax.DeclSyntax] {
-        guard let structDecl = declaration.as(StructDeclSyntax.self) else {
-            return []
-        }
-        
-        let identifier = structDecl.name.text.replacingOccurrences(of: "Endpoint", with: "")
-        
-        let sendableExtension: DeclSyntax =
-          """
-          extension \(raw: structDecl.name.text): EndpointProtocol {
-              typealias Response = \(raw: identifier)Response
-          }
-          """
-
-        guard let extensionDecl = sendableExtension.as(ExtensionDeclSyntax.self) else {
-          return []
-        }
-
-//        let extensionDecl = try ExtensionDeclSyntax("Test") {
-//            let initializerClauseDecl = TypeInitializerClauseSyntax(value: TypeSyntax(stringLiteral: "\(identifier)Response"))
-//            let typeAliasDecl = TypeAliasDeclSyntax(name: "Response", initializer: initializerClauseDecl)
-//        }
-        
-        return [DeclSyntax(extensionDecl)]
-    }
-    
+public struct EndpointMacro: ExtensionMacro {
     
     public static func expansion(of node: SwiftSyntax.AttributeSyntax, 
                                  attachedTo declaration: some SwiftSyntax.DeclGroupSyntax,
@@ -79,33 +49,36 @@ public struct EndpointMacro: MemberMacro, ExtensionMacro {
         guard let extensionDecl = sendableExtension.as(ExtensionDeclSyntax.self) else {
           return []
         }
-
-//        let extensionDecl = try ExtensionDeclSyntax("Test") {
-//            let initializerClauseDecl = TypeInitializerClauseSyntax(value: TypeSyntax(stringLiteral: "\(identifier)Response"))
-//            let typeAliasDecl = TypeAliasDeclSyntax(name: "Response", initializer: initializerClauseDecl)
-//        }
         
         return [extensionDecl]
-        
-//        return []
     }
-    
-    
+}
+
+public struct RepositoryMacro: MemberMacro {
     
     public static func expansion(of node: SwiftSyntax.AttributeSyntax, 
                                  providingMembersOf declaration: some SwiftSyntax.DeclGroupSyntax,
-                                 in context: some SwiftSyntaxMacros.MacroExpansionContext) 
+                                 in context: some SwiftSyntaxMacros.MacroExpansionContext)
     throws -> [SwiftSyntax.DeclSyntax] {
-        guard let structDecl = declaration.as(StructDeclSyntax.self) else {
+        
+        guard let classDecl = declaration.as(ClassDeclSyntax.self) else {
             return []
         }
-        return []
-//        let identifier = structDecl.name.text.replacingOccurrences(of: "Endpoint", with: "")
-//        
-//        let initializerClauseDecl = TypeInitializerClauseSyntax(value: TypeSyntax(stringLiteral: "\(identifier)Response"))
-//        let typeAliasDecl = TypeAliasDeclSyntax(name: "Response", initializer: initializerClauseDecl)
-//        
-//        return [DeclSyntax(typeAliasDecl)]
+        
+        let identifier = classDecl.name.text.replacingOccurrences(of: "Repository", with: "")
+        
+        let decl: DeclSyntax =
+          """
+          var store = CAStoreManager.shared
+          var webservice = CAURLSessionManager()
+          
+          func dataTaskAsync(dto: \(raw: identifier)DTO, options: [CAUsecaseOption]) async throws -> \(raw: identifier)DTO {
+              webservice.set(options: options)
+              return try await fetch(dto: dto)
+          }
+          """
+        
+        return [DeclSyntax(decl)]
     }
 }
 
@@ -113,6 +86,7 @@ public struct EndpointMacro: MemberMacro, ExtensionMacro {
 struct LCToolPlugin: CompilerPlugin {
     let providingMacros: [Macro.Type] = [
         StringifyMacro.self,
-        EndpointMacro.self
+        EndpointMacro.self,
+        RepositoryMacro.self
     ]
 }

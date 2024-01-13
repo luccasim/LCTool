@@ -44,7 +44,6 @@ final class CATestUIManager {
 }
 
 extension URLRequest {
-    
     func mapToTestUIServer(id: String? = nil) -> URLRequest? {
         CATestUIManager.shared.replaceHost(request: self, id: id)
     }
