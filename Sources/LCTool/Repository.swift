@@ -23,6 +23,10 @@ public final class CAURLSessionManager: CAURLSessionProtocol {
     var mockID: [String]?
     var cacheLimit: Double?
     
+    public init(session: URLSession = URLSession.shared) {
+        self.session = session
+    }
+    
     func set(options: [CAUsecaseOption]) {
         mockID = nil
         cacheLimit = nil
@@ -192,6 +196,8 @@ extension URLRequest {
 // MARK: - Logs
 
 public class LogManager {
+    
+    public init() {}
     
     var histories: [History] = []
     
