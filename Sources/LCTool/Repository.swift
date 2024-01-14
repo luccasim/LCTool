@@ -27,7 +27,7 @@ public final class CAURLSessionManager: CAURLSessionProtocol {
         self.session = session
     }
     
-    func set(options: [CAUsecaseOption]) {
+    public func set(options: [CAUsecaseOption]) {
         mockID = nil
         cacheLimit = nil
         options.forEach { item in
