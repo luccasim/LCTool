@@ -14,7 +14,7 @@ protocol CAURLSessionProtocol {
     func set(options: [CAUsecaseOption])
 }
 
-final class CAURLSessionManager: CAURLSessionProtocol {
+public final class CAURLSessionManager: CAURLSessionProtocol {
     
     var session = URLSession.shared
 //    var expireCache = CACacheManager.shared
@@ -63,7 +63,7 @@ final class CAURLSessionManager: CAURLSessionProtocol {
 //        }
 //    }
     
-    func downloadTask(request: URLRequest?) async throws -> URL {
+    public func downloadTask(request: URLRequest?) async throws -> URL {
         
         guard let request = request?.mapToTestUIServer(id: mockID?.popLast()) else {
             throw CAError.requestCreate
@@ -85,7 +85,7 @@ final class CAURLSessionManager: CAURLSessionProtocol {
         }
     }
     
-    func dataTask(request: URLRequest?) async throws -> Data {
+    public func dataTask(request: URLRequest?) async throws -> Data {
         
         guard let request = request?.mapToTestUIServer(id: mockID?.popLast()) else {
             throw CAError.requestCreate
@@ -107,7 +107,7 @@ final class CAURLSessionManager: CAURLSessionProtocol {
         }
     }
     
-    func jsonTask<Endpoint: EndpointProtocol>(endpoint: Endpoint) async throws -> Endpoint.Response {
+    public func jsonTask<Endpoint: EndpointProtocol>(endpoint: Endpoint) async throws -> Endpoint.Response {
         
         guard let request = endpoint.request?.mapToTestUIServer(id: mockID?.popLast()) else {
             throw CAError.requestCreate
@@ -310,7 +310,7 @@ public class LogManager {
 
 // MARK: - Errors
 
-enum CAError: Error {
+public enum CAError: Error {
     
     /// Bad Request sent to the API
     case badRequest
@@ -349,7 +349,7 @@ enum CAError: Error {
     case timeOut
 }
 
-extension Error {
+public extension Error {
     
     var toCAError: CAError {
         if let domainFailure = self as? CAError {
@@ -371,7 +371,7 @@ extension Error {
 
 // MARK: - Options
 
-enum CAUsecaseOption: Equatable {
+public enum CAUsecaseOption: Equatable {
     /// disable .webServiceIssue, .notFound, .networkIssue
     case disableSnackBar
     
@@ -390,7 +390,7 @@ enum CAUsecaseOption: Equatable {
 
 // MARK: - Store
 
-protocol CAStoreProtocol: AnyObject {
+public protocol CAStoreProtocol: AnyObject {
     
     func save(value: Any?, forKey: String)
     func retrieve(forKey: String) -> Any?
@@ -408,9 +408,9 @@ protocol CAStoreProtocol: AnyObject {
 //    func removeAsEncryption(forKey: String)
 }
 
-final class CAStoreManager {
+public final class CAStoreManager {
     
-    static let shared = CAStoreManager()
+    public static let shared = CAStoreManager()
     private init() {}
     
 //    private let writeFileManager = WriteFileManager()
@@ -420,11 +420,11 @@ final class CAStoreManager {
 
 extension CAStoreManager: CAStoreProtocol {
         
-    func save(value: Any?, forKey: String) {
+    public func save(value: Any?, forKey: String) {
         UserDefaults.standard.set(value, forKey: forKey)
     }
     
-    func retrieve(forKey: String) -> Any? {
+    public func retrieve(forKey: String) -> Any? {
         UserDefaults.standard.object(forKey: forKey)
     }
     
