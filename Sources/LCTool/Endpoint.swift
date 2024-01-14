@@ -232,7 +232,7 @@ fileprivate extension Data {
 }
 
 
-// MARK: Test Implementation
+// MARK: Verbatim
 
 struct TestEndpoint: Codable {
     var httpHeader: [String: String] = [:]

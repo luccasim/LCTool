@@ -82,11 +82,22 @@ public struct RepositoryMacro: MemberMacro {
     }
 }
 
+public struct UsecaseMacro: MemberMacro {
+    
+    public static func expansion(of node: SwiftSyntax.AttributeSyntax, 
+                                 providingMembersOf declaration: some SwiftSyntax.DeclGroupSyntax,
+                                 in context: some SwiftSyntaxMacros.MacroExpansionContext)
+    throws -> [SwiftSyntax.DeclSyntax] {
+        []
+    }
+}
+
 @main
 struct LCToolPlugin: CompilerPlugin {
     let providingMacros: [Macro.Type] = [
         StringifyMacro.self,
         EndpointMacro.self,
-        RepositoryMacro.self
+        RepositoryMacro.self,
+        UsecaseMacro.self
     ]
 }

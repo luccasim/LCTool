@@ -16,6 +16,114 @@ let testMacros: [String: Macro.Type] = [
 
 final class LCToolTests: XCTestCase {
     
+    func testUsecase() throws {
+        assertMacroExpansion(
+            """
+            protocol ChatUsecaseProtocol {
+                func dataTaskAsync(dto: ChatDTO?, options: [CAUsecaseOption]) async throws -> ChatDTO
+             }
+
+            extension CAInjectedValues {
+                var keyChat: ChatUsecaseProtocol {
+                    get { Self[ChatUsecase.self] }
+                    set { Self[ChatUsecase.self] = newValue }
+                }
+            }
+
+            extension ChatUsecase: CAInjectionKey, CAPreviewProtocol, ChatUsecaseProtocol {
+                
+                var keys: [CAPreviewKey] { Key.allCases.map({ .init(label: $0.label, key: $0.rawValue) }) }
+                func inject(key: String?) { ChatUsecase.currentValue = key.flatMap({Key(rawValue: $0)}).map({ChatUsecase(key: $0)}) ?? self }
+            }
+            
+            @Usecase
+            final class ChatUsecase: CAUsecaseProtocol {
+                
+                static var currentValue: ChatUsecaseProtocol = ChatUsecase()
+                
+                private let key: Key
+                private let repository: ChatRepositoryProtocol
+                
+                var config: [CAUsecaseOption] = []
+                
+                init(key: Key? = nil, repo: ChatRepositoryProtocol = ChatRepository()) {
+                    self.repository = repo
+                    self.key = key ?? .prod
+                    self.config = key.flatMap({[.useTestUIServer(mock: $0.rawValue)]}) ?? []
+                }
+                
+                enum Key: String, CaseIterable {
+                    
+                    case prod, luc, jean, pierre
+                    
+                    var label: String {
+                        switch self {
+                        case .prod: return "Production"
+                        default: return self.rawValue
+                        }
+                    }
+                }
+                
+                func dataFetch(dto: ChatDTO?, options: [CAUsecaseOption]) async throws -> ChatDTO {
+                    try await repository.dataTaskAsync(dto: dto ?? .init(), options: options)
+                }
+            }
+            """,
+            expandedSource:
+            """
+            protocol ChatUsecaseProtocol {
+                func dataTaskAsync(dto: ChatDTO?, options: [CAUsecaseOption]) async throws -> ChatDTO
+             }
+
+            extension CAInjectedValues {
+                var keyChat: ChatUsecaseProtocol {
+                    get { Self[ChatUsecase.self] }
+                    set { Self[ChatUsecase.self] = newValue }
+                }
+            }
+
+            extension ChatUsecase: CAInjectionKey, CAPreviewProtocol, ChatUsecaseProtocol {
+                
+                var keys: [CAPreviewKey] { Key.allCases.map({ .init(label: $0.label, key: $0.rawValue) }) }
+                func inject(key: String?) { ChatUsecase.currentValue = key.flatMap({Key(rawValue: $0)}).map({ChatUsecase(key: $0)}) ?? self }
+            }
+
+            final class ChatUsecase: CAUsecaseProtocol {
+                
+                static var currentValue: ChatUsecaseProtocol = ChatUsecase()
+                
+                private let key: Key
+                private let repository: ChatRepositoryProtocol
+                
+                var config: [CAUsecaseOption] = []
+                
+                init(key: Key? = nil, repo: ChatRepositoryProtocol = ChatRepository()) {
+                    self.repository = repo
+                    self.key = key ?? .prod
+                    self.config = key.flatMap({[.useTestUIServer(mock: $0.rawValue)]}) ?? []
+                }
+                
+                enum Key: String, CaseIterable {
+                    
+                    case prod, luc, jean, pierre
+                    
+                    var label: String {
+                        switch self {
+                        case .prod: return "Production"
+                        default: return self.rawValue
+                        }
+                    }
+                }
+                
+                func dataFetch(dto: ChatDTO?, options: [CAUsecaseOption]) async throws -> ChatDTO {
+                    try await repository.dataTaskAsync(dto: dto ?? .init(), options: options)
+                }
+            }
+            """,
+            macros: testMacros
+        )
+    }
+    
     func testRepository() throws {
         assertMacroExpansion(
             """

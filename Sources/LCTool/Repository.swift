@@ -349,6 +349,26 @@ enum CAError: Error {
     case timeOut
 }
 
+extension Error {
+    
+    var toCAError: CAError {
+        if let domainFailure = self as? CAError {
+            return domainFailure
+        }
+        
+        if (self as? URLError)?.code == .timedOut {
+            return CAError.timeOut
+        }
+        
+        switch self {
+        case is DecodingError, is URLError:
+            return CAError.webServiceIssue
+        default:
+            return CAError.usecase(error: self)
+        }
+    }
+}
+
 // MARK: - Options
 
 enum CAUsecaseOption: Equatable {
@@ -368,7 +388,7 @@ enum CAUsecaseOption: Equatable {
     case useTestUIServer(mock: String)
 }
 
-// MARK: - CAStore
+// MARK: - Store
 
 protocol CAStoreProtocol: AnyObject {
     
@@ -388,8 +408,6 @@ protocol CAStoreProtocol: AnyObject {
 //    func removeAsEncryption(forKey: String)
 }
 
-// MARK: - Store
-
 final class CAStoreManager {
     
     static let shared = CAStoreManager()
@@ -400,12 +418,8 @@ final class CAStoreManager {
 //    private let cacheManager = ExpireCacheManager()
 }
 
-// MARK: - Extension
-
 extension CAStoreManager: CAStoreProtocol {
-    
-    // MARK: - UserDefault
-    
+        
     func save(value: Any?, forKey: String) {
         UserDefaults.standard.set(value, forKey: forKey)
     }
@@ -414,8 +428,7 @@ extension CAStoreManager: CAStoreProtocol {
         UserDefaults.standard.object(forKey: forKey)
     }
     
-//    // MARK: - Cache
-//    
+//
 //    func saveCache(value: Any, forKey: String, forTime: TimeInterval?) {
 //        cacheManager.set(id: forKey, value: value, limit: forTime)
 //    }
@@ -427,9 +440,7 @@ extension CAStoreManager: CAStoreProtocol {
 //    func removeCache(forKey: String) {
 //        cacheManager.set(id: forKey, value: nil)
 //    }
-//    
-//    // MARK: - Codable
-//    
+//
 //    func saveCodable<T: Codable>(value: T, forKey: String) {
 //        writeFileManager.write(codableFileName: forKey, codableData: value)
 //    }
@@ -441,9 +452,7 @@ extension CAStoreManager: CAStoreProtocol {
 //    func removeCodable(forKey: String) {
 //        writeFileManager.delete(fileName: forKey)
 //    }
-//    
-//    // MARK: - Encryption
-//    
+//
 //    func saveAsEncryption(value: String?, forKey: String) {
 //        keychainManager.set(value: value, forKey: forKey)
 //    }
@@ -455,4 +464,33 @@ extension CAStoreManager: CAStoreProtocol {
 //    func removeAsEncryption(forKey: String) {
 //        keychainManager.delete(forKey: forKey)
 //    }
+}
+
+// MARK: - Verbatim
+
+protocol TestRepositoryProtocol {
+    func dataTaskAsync(dto: TestDTO, options: [CAUsecaseOption]) async throws -> TestDTO
+}
+
+final class TestRepository: TestRepositoryProtocol {
+
+    private func fetchEndpoint(dto: TestDTO) async throws -> TestDTO {
+        dto
+    }
+        
+    private func fetch(dto: TestDTO) async throws -> TestDTO {
+        do {
+            return try await fetchEndpoint(dto: dto)
+        } catch let error {
+            throw error
+        }
+    }
+    
+    var store = CAStoreManager.shared
+    var webservice = CAURLSessionManager()
+
+    func dataTaskAsync(dto: TestDTO, options: [CAUsecaseOption]) async throws -> TestDTO {
+        webservice.set(options: options)
+        return try await fetch(dto: dto)
+    }
 }
