@@ -16,7 +16,9 @@ public macro Endpoint() = #externalMacro(module: "LCToolMacros", type: "Endpoint
 @attached(member, names: named(store), named(webservice), named(dataTaskAsync(dto:options:)))
 public macro Repository() = #externalMacro(module: "LCToolMacros", type: "RepositoryMacro")
 
-@attached(member, names: named(repository), named(init(key:repo:)), named(dataFetch(dto:options:)))
+@attached(member, names: named(repository), named(init(key:repo:)), named(currentValue), named(config), named(key))
+@attached(extension, conformances: CAPreviewProtocol, CAUsecaseProtocol,
+          names: named(inject(key:)), named(keys), named(label), named(dataFetch(dto:options:)))
 public macro Usecase() = #externalMacro(module: "LCToolMacros", type: "UsecaseMacro")
 
 import Foundation
@@ -72,27 +74,9 @@ extension CAInjectedValues {
     }
 }
 
-extension ChatUsecase: CAInjectionKey, CAPreviewProtocol, ChatUsecaseProtocol {
-    
-    var keys: [CAPreviewKey] { Key.allCases.map({ .init(label: $0.label, key: $0.rawValue) }) }
-    func inject(key: String?) { ChatUsecase.currentValue = key.flatMap({Key(rawValue: $0)}).map({ChatUsecase(key: $0)}) ?? self }
-}
+@Usecase
+final class ChatUsecase: CAInjectionKey, ChatUsecaseProtocol {
 
-final class ChatUsecase: CAUsecaseProtocol {
-    
-    static var currentValue: ChatUsecaseProtocol = ChatUsecase()
-    
-    private let key: Key
-    private let repository: ChatRepositoryProtocol
-    
-    var config: [CAUsecaseOption] = []
-    
-    init(key: Key? = nil, repo: ChatRepositoryProtocol = ChatRepository()) {
-        self.repository = repo
-        self.key = key ?? .prod
-        self.config = key.flatMap({[.useTestUIServer(mock: $0.rawValue)]}) ?? []
-    }
-    
     enum Key: String, CaseIterable {
         
         case prod, luc, jean, pierre
@@ -103,9 +87,5 @@ final class ChatUsecase: CAUsecaseProtocol {
             default: return self.rawValue
             }
         }
-    }
-    
-    func dataFetch(dto: ChatDTO?, options: [CAUsecaseOption]) async throws -> ChatDTO {
-        try await repository.dataTaskAsync(dto: dto ?? .init(), options: options)
     }
 }

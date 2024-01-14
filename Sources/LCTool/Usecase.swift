@@ -15,12 +15,6 @@ public protocol CAPreviewProtocol {
     func inject(key: String?)
 }
 
-extension CAPreviewProtocol {
-    var label: String {
-        String(describing: Self.Type.self).replacingOccurrences(of: "Preview.Type", with: "")
-    }
-}
-
 public struct CAPreviewKey: Identifiable {
     let label: String
     let key: String
@@ -397,6 +391,7 @@ extension TestUsecase: CAInjectionKey, CAPreviewProtocol, TestUsecaseProtocol {
     
     var keys: [CAPreviewKey] { Key.allCases.map({ .init(label: $0.label, key: $0.rawValue) }) }
     func inject(key: String?) { TestUsecase.currentValue = key.flatMap({Key(rawValue: $0)}).map({TestUsecase(key: $0)}) ?? self }
+    var label: String { "Test" }
 }
 
 final class TestUsecase: CAUsecaseProtocol {
@@ -425,7 +420,7 @@ final class TestUsecase: CAUsecaseProtocol {
             }
         }
     }
-    
+        
     func dataFetch(dto: TestDTO?, options: [CAUsecaseOption]) async throws -> TestDTO {
         try await repository.dataTaskAsync(dto: dto ?? .init(), options: options)
     }

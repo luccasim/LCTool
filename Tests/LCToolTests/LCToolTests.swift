@@ -10,7 +10,8 @@ import LCToolMacros
 let testMacros: [String: Macro.Type] = [
     "stringify": StringifyMacro.self,
     "Endpoint": EndpointMacro.self,
-    "Repository": RepositoryMacro.self
+    "Repository": RepositoryMacro.self,
+    "Usecase": UsecaseMacro.self
 ]
 #endif
 
@@ -19,39 +20,9 @@ final class LCToolTests: XCTestCase {
     func testUsecase() throws {
         assertMacroExpansion(
             """
-            protocol ChatUsecaseProtocol {
-                func dataTaskAsync(dto: ChatDTO?, options: [CAUsecaseOption]) async throws -> ChatDTO
-             }
-
-            extension CAInjectedValues {
-                var keyChat: ChatUsecaseProtocol {
-                    get { Self[ChatUsecase.self] }
-                    set { Self[ChatUsecase.self] = newValue }
-                }
-            }
-
-            extension ChatUsecase: CAInjectionKey, CAPreviewProtocol, ChatUsecaseProtocol {
-                
-                var keys: [CAPreviewKey] { Key.allCases.map({ .init(label: $0.label, key: $0.rawValue) }) }
-                func inject(key: String?) { ChatUsecase.currentValue = key.flatMap({Key(rawValue: $0)}).map({ChatUsecase(key: $0)}) ?? self }
-            }
-            
             @Usecase
-            final class ChatUsecase: CAUsecaseProtocol {
-                
-                static var currentValue: ChatUsecaseProtocol = ChatUsecase()
-                
-                private let key: Key
-                private let repository: ChatRepositoryProtocol
-                
-                var config: [CAUsecaseOption] = []
-                
-                init(key: Key? = nil, repo: ChatRepositoryProtocol = ChatRepository()) {
-                    self.repository = repo
-                    self.key = key ?? .prod
-                    self.config = key.flatMap({[.useTestUIServer(mock: $0.rawValue)]}) ?? []
-                }
-                
+            final class ChatUsecase: CAInjectionKey, ChatUsecaseProtocol {
+            
                 enum Key: String, CaseIterable {
                     
                     case prod, luc, jean, pierre
@@ -62,47 +33,14 @@ final class LCToolTests: XCTestCase {
                         default: return self.rawValue
                         }
                     }
-                }
-                
-                func dataFetch(dto: ChatDTO?, options: [CAUsecaseOption]) async throws -> ChatDTO {
-                    try await repository.dataTaskAsync(dto: dto ?? .init(), options: options)
                 }
             }
             """,
             expandedSource:
             """
-            protocol ChatUsecaseProtocol {
-                func dataTaskAsync(dto: ChatDTO?, options: [CAUsecaseOption]) async throws -> ChatDTO
-             }
 
-            extension CAInjectedValues {
-                var keyChat: ChatUsecaseProtocol {
-                    get { Self[ChatUsecase.self] }
-                    set { Self[ChatUsecase.self] = newValue }
-                }
-            }
-
-            extension ChatUsecase: CAInjectionKey, CAPreviewProtocol, ChatUsecaseProtocol {
-                
-                var keys: [CAPreviewKey] { Key.allCases.map({ .init(label: $0.label, key: $0.rawValue) }) }
-                func inject(key: String?) { ChatUsecase.currentValue = key.flatMap({Key(rawValue: $0)}).map({ChatUsecase(key: $0)}) ?? self }
-            }
-
-            final class ChatUsecase: CAUsecaseProtocol {
-                
-                static var currentValue: ChatUsecaseProtocol = ChatUsecase()
-                
-                private let key: Key
-                private let repository: ChatRepositoryProtocol
-                
-                var config: [CAUsecaseOption] = []
-                
-                init(key: Key? = nil, repo: ChatRepositoryProtocol = ChatRepository()) {
-                    self.repository = repo
-                    self.key = key ?? .prod
-                    self.config = key.flatMap({[.useTestUIServer(mock: $0.rawValue)]}) ?? []
-                }
-                
+            final class ChatUsecase: CAInjectionKey, ChatUsecaseProtocol {
+            
                 enum Key: String, CaseIterable {
                     
                     case prod, luc, jean, pierre
@@ -114,7 +52,38 @@ final class LCToolTests: XCTestCase {
                         }
                     }
                 }
-                
+            
+                static var currentValue: ChatUsecaseProtocol = ChatUsecase()
+                let repository: ChatRepositoryProtocol
+                var config: [CAUsecaseOption] = []
+                private let key: Key
+            
+                init(key: Key? = nil, repo: ChatRepositoryProtocol = ChatRepository()) {
+                    self.repository = repo
+                    self.key = key ?? .prod
+                    self.config = key.flatMap({[.useTestUIServer(mock: $0.rawValue)]}) ?? []
+                }
+            }
+            
+            extension ChatUsecase: CAPreviewProtocol {
+                var keys: [CAPreviewKey] {
+                    Key.allCases.map({
+                            .init(label: $0.label, key: $0.rawValue)
+                        })
+                }
+                func inject(key: String?) {
+                    ChatUsecase.currentValue = key.flatMap({
+                            Key(rawValue: $0)
+                        }).map({
+                            ChatUsecase(key: $0)
+                        }) ?? self
+                }
+                var label: String {
+                    "Chat"
+                }
+            }
+            
+            extension ChatUsecase: CAUsecaseProtocol {
                 func dataFetch(dto: ChatDTO?, options: [CAUsecaseOption]) async throws -> ChatDTO {
                     try await repository.dataTaskAsync(dto: dto ?? .init(), options: options)
                 }
