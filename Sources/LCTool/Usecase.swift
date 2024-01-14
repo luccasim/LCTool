@@ -20,6 +20,10 @@ public struct CAPreviewKey: Identifiable {
     let key: String
     
     public var id: String { key }
+    public init(label: String, key: String) {
+        self.label = label
+        self.key = key
+    }
 }
 
 //extension View {
@@ -76,7 +80,7 @@ import Network
 import SystemConfiguration
 import Foundation
 
-protocol CAReachabilityProtocol {
+public protocol CAReachabilityProtocol {
     func isConnectedToNetwork() -> Bool
 }
 
@@ -84,7 +88,7 @@ public final class ReachabilityManager: CAReachabilityProtocol {
         
     public static var shared = ReachabilityManager()
     
-    func isConnectedToNetwork() -> Bool {
+    public func isConnectedToNetwork() -> Bool {
 
         var zeroAddress = sockaddr_in(sin_len: 0,
                                       sin_family: 0,
@@ -120,7 +124,7 @@ public final class ReachabilityManager: CAReachabilityProtocol {
 
 import UserNotifications
 
-protocol CAReportProtocol {
+public protocol CAReportProtocol {
     func sendDecodableStrapi(request: URLRequest, error: Error, json: Data) async
     func pushLocalError(caError: CAError, className: String)
 }
@@ -242,7 +246,7 @@ final class CAReportManager: ObservableObject, CAReportProtocol {
 
 // MARK: - Notifications
 
-protocol CANotificationProtocol {
+public protocol CANotificationProtocol {
     func post(id: String, value: Any?)
 //    func alert(type: CANotificationManager.AlertType)
 }
@@ -278,7 +282,7 @@ final class CANotificationManager: CANotificationProtocol {
 
 // MARK: - Usecase
 
-protocol CAUsecaseProtocol: AnyObject {
+public protocol CAUsecaseProtocol: AnyObject {
     
     associatedtype DTO
     
@@ -298,7 +302,7 @@ protocol CAUsecaseProtocol: AnyObject {
     
 }
 
-extension CAUsecaseProtocol {
+public extension CAUsecaseProtocol {
     
     var reachabilityManager: CAReachabilityProtocol { ReachabilityManager.shared }
     var notificationManager: CANotificationProtocol { CANotificationManager.shared }
