@@ -260,19 +260,6 @@ final class CANotificationManager: CANotificationProtocol {
         case webserviceIssue
     }
     
-//    func alert(type: AlertType) {
-//        var alert: AlertToast.Id = .system(title: "")
-//        switch type {
-//        case .networkIssue:
-//            alert = .system(title: "AlertToast.NetworkIssue.Title",
-//                            image: .system(name: "exclamationmark.circle.fill"))
-//        case .webserviceIssue:
-//            alert = .system(title: "AlertToast.WebserviceIssue.Title",
-//                            image: .system(name: "exclamationmark.circle.fill"))
-//        }
-//        post(id: "alert", value: alert)
-//    }
-    
     func post(id: String, value: Any?) {
         DispatchQueue.main.async {
             NotificationCenter.default.post(name: .init(id), object: value)
