@@ -9,9 +9,15 @@ import SwiftUI
 import Combine
 
 public struct SnackBarInfo {
-    let message: String
-    let image: Image?
-    var backgroundColor: Color = .gray
+    
+    public let message: String
+    public let image: Image?
+    public var backgroundColor: Color = .gray
+    public var displayTime: Double = 3
+    
+    public enum Position {
+        case top, bottom
+    }
 }
 
 // MARK: - Extensions
@@ -23,8 +29,8 @@ public extension NotificationCenter {
 }
 
 public extension View {
-    func snackBarCenter() -> some View {
-        modifier(SnackBarInfoViewModifier())
+    func snackBarCenter(position: SnackBarInfo.Position = .bottom) -> some View {
+        modifier(SnackBarInfoViewModifier(position: position))
     }
 }
 
@@ -40,7 +46,7 @@ private class SnackBarVM: ObservableObject {
     
     init() {
          cancellable = subject
-            .throttle(for: .seconds(3), scheduler: RunLoop.main, latest: true)
+            .throttle(for: .seconds(4), scheduler: RunLoop.main, latest: true)
             .sink { info in
                 self.update(info: info)
             }
@@ -55,7 +61,7 @@ private class SnackBarVM: ObservableObject {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
             self.isAppear = true
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + info.displayTime) {
             self.isAppear = false
         }
     }
@@ -64,14 +70,15 @@ private class SnackBarVM: ObservableObject {
 private struct SnackBarInfoViewModifier: ViewModifier {
     
     @StateObject private var viewModel = SnackBarVM()
+    let position: SnackBarInfo.Position
     
     var offset: CGFloat {
-        viewModel.isAppear ? 0 : 100.0
+        viewModel.isAppear ? 0 : position == .bottom ? 100 : -130
     }
     
     func body(content: Content) -> some View {
         content
-            .overlay(alignment: .bottom) {
+            .overlay(alignment: position == .bottom ? .bottom : .top) {
                 SnackBarView(info: viewModel.info)
                     .offset(y: offset)
                     .animation(.spring, value: offset)
@@ -117,14 +124,15 @@ private struct SnackBarView: View {
 struct SnackBarPreview: View {
         
     let info = SnackBarInfo(message: "Bonjour je suis un dracofeu, j'aime les tomates et je crache du feu",
-                                 image: nil,
-                                 backgroundColor: .red)
+                            image: nil,
+                            backgroundColor: .red,
+                            displayTime: 2)
     let info2 = SnackBarInfo(message: "Bonjour je suis un Florizarre, j'aime les salade et fouette les arabes",
-                                  image: .init(systemName: "doc"),
-                                 backgroundColor: .green)
+                             image: .init(systemName: "doc"),
+                             backgroundColor: .green)
     let info3 = SnackBarInfo(message: "Bonjour je suis un Tortank, j'aime les raisins et j'arose!",
-                                 image: nil,
-                                 backgroundColor: .blue)
+                             image: nil,
+                             backgroundColor: .blue)
     
     var body: some View {
         ZStack {
@@ -134,6 +142,7 @@ struct SnackBarPreview: View {
             actionButton
         }
         .snackBarCenter()
+        .snackBarCenter(position: .top)
     }
     
     var actionButton: some View {
