@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Combine
 
 public struct SnackBarInfo {
     let message: String
@@ -13,33 +14,71 @@ public struct SnackBarInfo {
     var backgroundColor: Color = .gray
 }
 
+// MARK: - Extensions
+
+public extension NotificationCenter {
+    static func snackBarNotif(info: SnackBarInfo) {
+        NotificationCenter.default.post(name: .init("LCTool.SnackBarInfoViewModifier"), object: info)
+    }
+}
+
+public extension View {
+    func snackBarCenter() -> some View {
+        modifier(SnackBarInfoViewModifier())
+    }
+}
+
 // MARK: - Views
+
+private class SnackBarVM: ObservableObject {
+    
+    @Published var info: SnackBarInfo = .init(message: "", image: nil)
+    @Published var isAppear = false
+    
+    let subject = PassthroughSubject<SnackBarInfo, Never>()
+    var cancellable: AnyCancellable?
+    
+    init() {
+         cancellable = subject
+            .throttle(for: .seconds(3), scheduler: RunLoop.main, latest: true)
+            .sink { info in
+                self.update(info: info)
+            }
+    }
+    
+    func add(info: SnackBarInfo) {
+        subject.send(info)
+    }
+    
+    private func update(info: SnackBarInfo) {
+        self.info = info
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            self.isAppear = true
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+            self.isAppear = false
+        }
+    }
+}
 
 private struct SnackBarInfoViewModifier: ViewModifier {
     
-    @State private var info: SnackBarInfo = .init(message: "", image: nil)
-    @State private var isAppear = false
+    @StateObject private var viewModel = SnackBarVM()
     
     var offset: CGFloat {
-        isAppear ? 0 : 100.0
+        viewModel.isAppear ? 0 : 100.0
     }
     
     func body(content: Content) -> some View {
         content
             .overlay(alignment: .bottom) {
-                SnackBarView(info: info)
+                SnackBarView(info: viewModel.info)
                     .offset(y: offset)
                     .animation(.spring, value: offset)
             }
             .onReceive(NotificationCenter.default.publisher(for: .init("LCTool.SnackBarInfoViewModifier"))) { output in
                 if let info = output.object as? SnackBarInfo {
-                    self.info = info
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                        self.isAppear = true
-                    }
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                        self.isAppear = false
-                    }
+                    viewModel.add(info: info)
                 }
             }
     }
@@ -72,19 +111,6 @@ private struct SnackBarView: View {
     }
 }
 
-// MARK: - Extensions
-
-public extension NotificationCenter {
-    static func snackBarNotif(info: SnackBarInfo) {
-        NotificationCenter.default.post(name: .init("LCTool.SnackBarInfoViewModifier"), object: info)
-    }
-}
-
-public extension View {
-    func snackBarCenter() -> some View {
-        modifier(SnackBarInfoViewModifier())
-    }
-}
 
 // MARK: - Preview
 
