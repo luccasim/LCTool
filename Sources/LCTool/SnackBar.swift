@@ -13,7 +13,7 @@ public struct SnackBarInfo {
     public let message: String
     public let image: Image?
     public var backgroundColor: Color = .gray
-    public var displayTime: Double = 3
+    public var displayTime: Double = 5
     
     public enum Position {
         case top, bottom
@@ -46,7 +46,7 @@ private class SnackBarVM: ObservableObject {
     
     init() {
          cancellable = subject
-            .throttle(for: .seconds(4), scheduler: RunLoop.main, latest: true)
+            .throttle(for: .seconds(6), scheduler: RunLoop.main, latest: true)
             .sink { info in
                 self.update(info: info)
             }
@@ -73,7 +73,7 @@ private struct SnackBarInfoViewModifier: ViewModifier {
     let position: SnackBarInfo.Position
     
     var offset: CGFloat {
-        viewModel.isAppear ? 0 : position == .bottom ? 100 : -130
+        viewModel.isAppear ? -10 : position == .bottom ? 100 : -130
     }
     
     func body(content: Content) -> some View {
@@ -113,7 +113,8 @@ private struct SnackBarView: View {
         }
         .padding()
         .frame(maxWidth: .infinity)
-        .background(RoundedRectangle(cornerRadius: 8).fill(info.backgroundColor))
+        .background(RoundedRectangle(cornerRadius: 8).fill(info.backgroundColor).opacity(0.9))
+        .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 6)
         .padding(.horizontal)
     }
 }
