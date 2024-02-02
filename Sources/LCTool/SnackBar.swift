@@ -10,10 +10,31 @@ import Combine
 
 public struct SnackBarInfo {
     
-    public let message: String
-    public let image: Image?
-    public var backgroundColor: Color = .gray
-    public var displayTime: Double = 5
+    public init(message: String) {
+        self.message = message
+        self.image = nil
+        self.backgroundColor = .gray
+        self.displayTime = 5
+        self.haptic = nil
+    }
+    
+    public init(message: String, 
+                image: Image? = nil,
+                backgroundColor: Color = .gray,
+                displayTime: Double = 5,
+                haptic: UIImpactFeedbackGenerator.FeedbackStyle? = nil) {
+        self.message = message
+        self.image = image
+        self.backgroundColor = backgroundColor
+        self.displayTime = displayTime
+        self.haptic = haptic
+    }
+    
+    let message: String
+    let image: Image?
+    let backgroundColor: Color
+    let displayTime: Double
+    let haptic: UIImpactFeedbackGenerator.FeedbackStyle?
     
     public enum Position {
         case top, bottom
@@ -60,6 +81,9 @@ private class SnackBarVM: ObservableObject {
         self.info = info
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
             self.isAppear = true
+            if let haptic = info.haptic {
+                UIImpactFeedbackGenerator(style: haptic).impactOccurred()
+            }
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + info.displayTime) {
             self.isAppear = false
@@ -73,21 +97,26 @@ private struct SnackBarInfoViewModifier: ViewModifier {
     let position: SnackBarInfo.Position
     
     var offset: CGFloat {
-        viewModel.isAppear ? -10 : position == .bottom ? 100 : -130
+        viewModel.isAppear ? 
+        position == .bottom ? -10 : 0 :
+        position == .bottom ? 100 : -130
     }
     
     func body(content: Content) -> some View {
-        content
-            .overlay(alignment: position == .bottom ? .bottom : .top) {
-                SnackBarView(info: viewModel.info)
-                    .offset(y: offset)
-                    .animation(.spring, value: offset)
+        ZStack {
+            Color.clear.ignoresSafeArea()
+            content
+        }
+        .overlay(alignment: position == .bottom ? .bottom : .top) {
+            SnackBarView(info: viewModel.info)
+                .offset(y: offset)
+                .animation(.spring, value: offset)
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .init("LCTool.SnackBarInfoViewModifier"))) { output in
+            if let info = output.object as? SnackBarInfo {
+                viewModel.add(info: info)
             }
-            .onReceive(NotificationCenter.default.publisher(for: .init("LCTool.SnackBarInfoViewModifier"))) { output in
-                if let info = output.object as? SnackBarInfo {
-                    viewModel.add(info: info)
-                }
-            }
+        }
     }
 }
 
@@ -113,7 +142,11 @@ private struct SnackBarView: View {
         }
         .padding()
         .frame(maxWidth: .infinity)
-        .background(RoundedRectangle(cornerRadius: 8).fill(info.backgroundColor).opacity(0.9))
+        .background(
+            RoundedRectangle(cornerRadius: 8)
+                .fill(info.backgroundColor)
+                .opacity(0.9)
+        )
         .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 6)
         .padding(.horizontal)
     }
@@ -136,14 +169,9 @@ struct SnackBarPreview: View {
                              backgroundColor: .blue)
     
     var body: some View {
-        ZStack {
-            Rectangle()
-                .fill(Color.white)
-                .ignoresSafeArea()
-            actionButton
-        }
-        .snackBarCenter()
-        .snackBarCenter(position: .top)
+        actionButton
+            .snackBarCenter()
+            .snackBarCenter(position: .top)
     }
     
     var actionButton: some View {
