@@ -1,7 +1,8 @@
 //___FILEHEADER___
-//  Template: 5.0
+//  Template: 6.0
 
 import Foundation
+import LCTool
 
 // MARK: - Injection
 
@@ -18,40 +19,18 @@ extension CAInjectedValues {
 
 // MARK: - ___VARIABLE_ModuleName:identifier___Usecase
 
+@Usecase
 final class ___VARIABLE_ModuleName:identifier___Usecase: ___VARIABLE_ModuleName:identifier___UsecaseProtocol, CAUsecaseProtocol, CAInjectionKey {
         
-    static var currentValue: ___VARIABLE_ModuleName:identifier___UsecaseProtocol = ___VARIABLE_ModuleName:identifier___Usecase()
-    
-    let repository: ___VARIABLE_ModuleName:identifier___RepositoryProtocol
-    var config: [CAUsecaseOption] = []
-    
-    init(repo: ___VARIABLE_ModuleName:identifier___RepositoryProtocol = ___VARIABLE_ModuleName:identifier___Repository(), config: [CAUsecaseOption] = []) {
-        self.config = config
-        self.repository = repo
+    enum Key: String, CaseIterable {
+        
+        case prod
+        
+        var label: String {
+            switch self {
+            case .prod: return "Production"
+            default: return self.rawValue
+            }
+        }
     }
-    
-    func dataFetch(dto: ___VARIABLE_ModuleName:identifier___DTO?, options: [CAUsecaseOption]) async throws -> ___VARIABLE_ModuleName:identifier___DTO {
-        try await repository.dataTaskAsync(dto: dto ?? .init(), options: options)
-    }
-}
-
-// MARK: - Usecase
-
-extension ___VARIABLE_ModuleName:identifier___Usecase {
-    
-//    enum Failure: Error {
-//
-//    }
-    
-//    func input(dto: ___VARIABLE_ModuleName:identifier___DTO?) throws -> ___VARIABLE_ModuleName:identifier___DTO? {
-//        dto
-//    }
-    
-//    func output(dto: ___VARIABLE_ModuleName:identifier___DTO) throws -> ___VARIABLE_ModuleName:identifier___DTO {
-//        dto
-//    }
-    
-//    func stdErr(error: Error) -> Error {
-//        error
-//    }
 }

@@ -1,7 +1,8 @@
 //___FILEHEADER___
-//  Template: 5.0
+//  Template: 6.0
 
 import Foundation
+import LCTool
 
 // MARK: - ___VARIABLE_ModuleName:identifier___RepositoryProtocol
 
@@ -9,19 +10,10 @@ protocol ___VARIABLE_ModuleName:identifier___RepositoryProtocol {
     func dataTaskAsync(dto: ___VARIABLE_ModuleName:identifier___DTO, options: [CAUsecaseOption]) async throws -> ___VARIABLE_ModuleName:identifier___DTO
 }
 
-extension ___VARIABLE_ModuleName:identifier___Repository: ___VARIABLE_ModuleName:identifier___RepositoryProtocol {
-    func dataTaskAsync(dto: ___VARIABLE_ModuleName:identifier___DTO, options: [CAUsecaseOption]) async throws -> ___VARIABLE_ModuleName:identifier___DTO {
-        webservice.set(options: options)
-        return try await fetch(dto: dto)
-    }
-}
-
 // MARK: - ___VARIABLE_ModuleName:identifier___Repository
 
+@Repository
 final class ___VARIABLE_ModuleName:identifier___Repository {
-        
-    var store = CAStoreManager.shared
-    var webservice = CAURLSessionManager()
     
     // MARK: - Async Endpoint
     
