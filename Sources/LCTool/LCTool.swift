@@ -67,15 +67,7 @@ extension CAInjectedValues {
 @Usecase
 final class ChatUsecase: ChatUsecaseProtocol {
 
-    enum Key: String, CaseIterable {
-        
+    enum Key: String, CaseIterable, PostmanKey {
         case prod, luc, jean, pierre
-        
-        var label: String {
-            switch self {
-            case .prod: return "Production"
-            default: return self.rawValue
-            }
-        }
     }
 }

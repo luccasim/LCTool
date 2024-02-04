@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 // MARK: - Previews
 
@@ -26,14 +27,15 @@ public struct CAPreviewKey: Identifiable {
     }
 }
 
-//extension View {
-//    func inject(preview: CAPreviewProtocol, task: (() -> Void)? = nil) -> some View {
-//        preview.inject(key: nil)
-//        return self.task {
-//            task?()
-//        }
-//    }
-//}
+public protocol PostmanKey {
+    var label: String { get }
+}
+
+public extension PostmanKey where Self: RawRepresentable {
+    var label: String {
+        return "\(self.rawValue)"
+    }
+}
 
 // MARK: - Injected
 

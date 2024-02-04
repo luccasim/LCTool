@@ -4,8 +4,6 @@
 import Foundation
 import LCTool
 
-// MARK: - Injection
-
 protocol ___VARIABLE_ModuleName:identifier___UsecaseProtocol {
     func dataTaskAsync(dto: ___VARIABLE_ModuleName:identifier___DTO?, options: [CAUsecaseOption]) async throws -> ___VARIABLE_ModuleName:identifier___DTO
  }
@@ -17,10 +15,10 @@ extension CAInjectedValues {
     }
 }
 
-// MARK: - ___VARIABLE_ModuleName:identifier___Usecase
-
 @Usecase
 final class ___VARIABLE_ModuleName:identifier___Usecase: ___VARIABLE_ModuleName:identifier___UsecaseProtocol {
+    
+    // MARK: - Postman
         
     enum Key: String, CaseIterable {
         
@@ -32,5 +30,11 @@ final class ___VARIABLE_ModuleName:identifier___Usecase: ___VARIABLE_ModuleName:
             default: return self.rawValue
             }
         }
+    }
+    
+    // MARK: - Error
+    
+    enum Failure: Error {
+        
     }
 }

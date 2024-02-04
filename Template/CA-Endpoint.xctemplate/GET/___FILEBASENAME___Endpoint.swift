@@ -1,17 +1,17 @@
 //___FILEHEADER___
-//  Template: 5.0
+//  Template: 6.0
 
 import Foundation
+import LCTool
 
-// MARK: - Endpoint
-
+@Endpoint
 struct ___VARIABLE_ModuleName:identifier___Endpoint: Codable {
-    var httpHeader: [String: String] = [:]
-}
-
-extension ___VARIABLE_ModuleName:identifier___Endpoint: CAEndpointProtocol {
     
-    typealias T = ___VARIABLE_ModuleName:identifier___Response
+    // MARK: - Params
+    
+    var httpHeader: [String: String] = [:]
+    
+    // MARK: - Request
     
     var request: URLRequest? {
         // Header

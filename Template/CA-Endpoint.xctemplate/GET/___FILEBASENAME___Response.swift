@@ -1,10 +1,8 @@
 //___FILEHEADER___
-//  Template: 5.0
+//  Template: 6.0
 
 import Foundation
 
-// MARK: - Codable
-
 struct ___VARIABLE_ModuleName:identifier___Response: Codable {
-    // todo
+    
 }
