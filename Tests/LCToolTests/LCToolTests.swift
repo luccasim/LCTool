@@ -18,7 +18,7 @@ final class LCToolTests: XCTestCase {
         assertMacroExpansion(
             """
             @Usecase
-            final class ChatUsecase: CAInjectionKey, ChatUsecaseProtocol {
+            final class ChatUsecase: ChatUsecaseProtocol {
             
                 enum Key: String, CaseIterable {
                     
@@ -36,7 +36,7 @@ final class LCToolTests: XCTestCase {
             expandedSource:
             """
 
-            final class ChatUsecase: CAInjectionKey, ChatUsecaseProtocol {
+            final class ChatUsecase: ChatUsecaseProtocol {
             
                 enum Key: String, CaseIterable {
                     
@@ -50,13 +50,11 @@ final class LCToolTests: XCTestCase {
                     }
                 }
             
-                static var currentValue: ChatUsecaseProtocol = ChatUsecase()
-                let repository: ChatRepositoryProtocol
+                let repository = ChatRepository()
                 var config: [CAUsecaseOption] = []
                 private let key: Key
             
-                init(key: Key? = nil, repo: ChatRepositoryProtocol = ChatRepository()) {
-                    self.repository = repo
+                init(key: Key? = nil) {
                     self.key = key ?? .prod
                     self.config = key.flatMap({[.useTestUIServer(mock: $0.rawValue)]}) ?? []
                 }
@@ -84,6 +82,10 @@ final class LCToolTests: XCTestCase {
                 func dataFetch(dto: ChatDTO?, options: [CAUsecaseOption]) async throws -> ChatDTO {
                     try await repository.dataTaskAsync(dto: dto ?? .init(), options: options)
                 }
+            }
+            
+            extension ChatUsecase: CAInjectionKey {
+                static var currentValue: ChatUsecaseProtocol = ChatUsecase()
             }
             """,
             macros: testMacros

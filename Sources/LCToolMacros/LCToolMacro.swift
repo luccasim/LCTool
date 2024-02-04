@@ -32,6 +32,8 @@ public struct EndpointMacro: ExtensionMacro {
     }
 }
 
+// MARK: - Repository
+
 public struct RepositoryMacro: MemberMacro {
     
     public static func expansion(of node: SwiftSyntax.AttributeSyntax, 
@@ -60,6 +62,8 @@ public struct RepositoryMacro: MemberMacro {
     }
 }
 
+// MARK: - Usecase
+
 public struct UsecaseMacro: MemberMacro, ExtensionMacro {
     
     public static func expansion(of node: SwiftSyntax.AttributeSyntax, 
@@ -68,6 +72,7 @@ public struct UsecaseMacro: MemberMacro, ExtensionMacro {
                                  conformingTo protocols: [SwiftSyntax.TypeSyntax],
                                  in context: some SwiftSyntaxMacros.MacroExpansionContext)
     throws -> [SwiftSyntax.ExtensionDeclSyntax] {
+        
         guard let classDecl = declaration.as(ClassDeclSyntax.self) else {
             return []
         }
@@ -87,6 +92,10 @@ public struct UsecaseMacro: MemberMacro, ExtensionMacro {
                   try await repository.dataTaskAsync(dto: dto ?? .init(), options: options)
               }
           }
+          
+          extension \(raw: classDecl.name.text): CAInjectionKey {
+              static var currentValue: \(raw: identifier)UsecaseProtocol = \(raw: identifier)Usecase()
+          }
           """
 
         guard let extensionDecl = sendableExtension.as(ExtensionDeclSyntax.self) else {
@@ -101,6 +110,7 @@ public struct UsecaseMacro: MemberMacro, ExtensionMacro {
                                  providingMembersOf declaration: some SwiftSyntax.DeclGroupSyntax,
                                  in context: some SwiftSyntaxMacros.MacroExpansionContext)
     throws -> [SwiftSyntax.DeclSyntax] {
+        
         guard let classDecl = declaration.as(ClassDeclSyntax.self) else {
             return []
         }
@@ -109,13 +119,11 @@ public struct UsecaseMacro: MemberMacro, ExtensionMacro {
         
         let decl: DeclSyntax =
           """
-          static var currentValue: \(raw: identifier)UsecaseProtocol = \(raw: identifier)Usecase()
-          let repository: \(raw: identifier)RepositoryProtocol
+          let repository = \(raw: identifier)Repository()
           var config: [CAUsecaseOption] = []
           private let key: Key
           
-          init(key: Key? = nil, repo: \(raw: identifier)RepositoryProtocol = \(raw: identifier)Repository()) {
-              self.repository = repo
+          init(key: Key? = nil) {
               self.key = key ?? .prod
               self.config = key.flatMap({[.useTestUIServer(mock: $0.rawValue)]}) ?? []
           }

@@ -67,7 +67,7 @@ private class SnackBarVM: ObservableObject {
     
     init() {
          cancellable = subject
-            .throttle(for: .seconds(6), scheduler: RunLoop.main, latest: true)
+            .throttle(for: .seconds(5), scheduler: RunLoop.main, latest: true)
             .sink { info in
                 self.update(info: info)
             }
@@ -171,7 +171,6 @@ struct SnackBarPreview: View {
     var body: some View {
         actionButton
             .snackBarCenter()
-            .snackBarCenter(position: .top)
     }
     
     var actionButton: some View {

@@ -7,9 +7,9 @@ public macro Endpoint() = #externalMacro(module: "LCToolMacros", type: "Endpoint
 @attached(member, names: named(store), named(webservice), named(dataTaskAsync(dto:options:)))
 public macro Repository() = #externalMacro(module: "LCToolMacros", type: "RepositoryMacro")
 
-@attached(member, names: named(repository), named(init(key:repo:)), named(currentValue), named(config), named(key))
-@attached(extension, conformances: CAPreviewProtocol, CAUsecaseProtocol,
-          names: named(inject(key:)), named(keys), named(label), named(dataFetch(dto:options:)))
+@attached(member, names: named(repository), named(init(key:)), named(config), named(key))
+@attached(extension, conformances: CAPreviewProtocol, CAUsecaseProtocol, CAInjectionKey,
+          names: named(inject(key:)), named(keys), named(label), named(currentValue), named(dataFetch(dto:options:)))
 public macro Usecase() = #externalMacro(module: "LCToolMacros", type: "UsecaseMacro")
 
 import Foundation
@@ -65,7 +65,7 @@ extension CAInjectedValues {
 }
 
 @Usecase
-final class ChatUsecase: CAInjectionKey, ChatUsecaseProtocol {
+final class ChatUsecase: ChatUsecaseProtocol {
 
     enum Key: String, CaseIterable {
         

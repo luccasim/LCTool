@@ -20,7 +20,7 @@ extension CAInjectedValues {
 // MARK: - ___VARIABLE_ModuleName:identifier___Usecase
 
 @Usecase
-final class ___VARIABLE_ModuleName:identifier___Usecase: ___VARIABLE_ModuleName:identifier___UsecaseProtocol, CAUsecaseProtocol, CAInjectionKey {
+final class ___VARIABLE_ModuleName:identifier___Usecase: ___VARIABLE_ModuleName:identifier___UsecaseProtocol {
         
     enum Key: String, CaseIterable {
         
