@@ -14,6 +14,26 @@ let testMacros: [String: Macro.Type] = [
 
 final class LCToolTests: XCTestCase {
     
+    func testUsecaseProtocols() throws {
+        assertMacroExpansion(
+            """
+            @Usecase
+            protocol ChatUsecaseProtocol {
+                func dataTaskAsync(dto: ChatDTO?, options: [CAUsecaseOption]) async throws -> ChatDTO
+            }
+            """,
+            expandedSource: """
+            
+            protocol ChatUsecaseProtocol {
+                func dataTaskAsync(dto: ChatDTO?, options: [CAUsecaseOption]) async throws -> ChatDTO
+            
+                func hello()
+            }
+            """,
+            macros: testMacros
+        )
+    }
+    
     func testUsecase() throws {
         assertMacroExpansion(
             """
@@ -81,6 +101,9 @@ final class LCToolTests: XCTestCase {
             extension ChatUsecase: CAUsecaseProtocol {
                 func dataFetch(dto: ChatDTO?, options: [CAUsecaseOption]) async throws -> ChatDTO {
                     try await repository.dataTaskAsync(dto: dto ?? .init(), options: options)
+                }
+                func hello() {
+                    print("Hello")
                 }
             }
             

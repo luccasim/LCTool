@@ -91,6 +91,9 @@ public struct UsecaseMacro: MemberMacro, ExtensionMacro {
               func dataFetch(dto: \(raw: identifier)DTO?, options: [CAUsecaseOption]) async throws -> \(raw: identifier)DTO {
                   try await repository.dataTaskAsync(dto: dto ?? .init(), options: options)
               }
+              func hello() {
+                  print("Hello")
+              }
           }
           
           extension \(raw: classDecl.name.text): CAInjectionKey {
@@ -110,6 +113,14 @@ public struct UsecaseMacro: MemberMacro, ExtensionMacro {
                                  providingMembersOf declaration: some SwiftSyntax.DeclGroupSyntax,
                                  in context: some SwiftSyntaxMacros.MacroExpansionContext)
     throws -> [SwiftSyntax.DeclSyntax] {
+        
+        if let _ = declaration.as(ProtocolDeclSyntax.self) {
+            let decl: DeclSyntax =
+              """
+             func hello()
+             """
+            return [decl]
+        }
         
         guard let classDecl = declaration.as(ClassDeclSyntax.self) else {
             return []

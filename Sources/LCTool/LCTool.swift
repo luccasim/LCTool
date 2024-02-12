@@ -1,15 +1,30 @@
 // The Swift Programming Language
 // https://docs.swift.org/swift-book
 
-@attached(extension, conformances: EndpointProtocol, names: named(Response))
+@attached(extension, 
+          conformances: EndpointProtocol,
+          names: named(Response))
 public macro Endpoint() = #externalMacro(module: "LCToolMacros", type: "EndpointMacro")
 
-@attached(member, names: named(store), named(webservice), named(dataTaskAsync(dto:options:)))
+@attached(member, 
+          names: named(store),
+          named(webservice),
+          named(dataTaskAsync(dto:options:)))
 public macro Repository() = #externalMacro(module: "LCToolMacros", type: "RepositoryMacro")
 
-@attached(member, names: named(repository), named(init(key:)), named(config), named(key))
+@attached(member, 
+          names: named(repository),
+          named(init(key:)),
+          named(config),
+          named(key),
+          named(hello))
 @attached(extension, conformances: CAPreviewProtocol, CAUsecaseProtocol, CAInjectionKey,
-          names: named(inject(key:)), named(keys), named(label), named(currentValue), named(dataFetch(dto:options:)))
+          names: named(inject(key:)), 
+          named(keys), 
+          named(label),
+          named(currentValue),
+          named(dataFetch(dto:options:)),
+          named(hello))
 public macro Usecase() = #externalMacro(module: "LCToolMacros", type: "UsecaseMacro")
 
 import Foundation
@@ -53,6 +68,7 @@ final class ChatRepository: ChatRepositoryProtocol {
 
 // MARK: - Usecase
 
+@Usecase
 protocol ChatUsecaseProtocol {
     func dataTaskAsync(dto: ChatDTO?, options: [CAUsecaseOption]) async throws -> ChatDTO
  }
@@ -68,6 +84,6 @@ extension CAInjectedValues {
 final class ChatUsecase: ChatUsecaseProtocol {
 
     enum Key: String, CaseIterable, PostmanKey {
-        case prod, luc, jean, pierre
+        case prod, test, un, deux, trois
     }
 }
