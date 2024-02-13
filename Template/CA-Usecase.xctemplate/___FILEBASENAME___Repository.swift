@@ -4,6 +4,7 @@
 import Foundation
 import LCTool
 
+@Repository
 protocol ___VARIABLE_ModuleName:identifier___RepositoryProtocol {
     func dataTaskAsync(dto: ___VARIABLE_ModuleName:identifier___DTO, options: [CAUsecaseOption]) async throws -> ___VARIABLE_ModuleName:identifier___DTO
 }

@@ -18,8 +18,9 @@ public macro Repository() = #externalMacro(module: "LCToolMacros", type: "Reposi
           named(config),
           named(key),
           named(hello))
-@attached(extension, conformances: CAPreviewProtocol, CAUsecaseProtocol, CAInjectionKey,
-          names: named(inject(key:)), 
+@attached(extension, 
+          conformances: CAPreviewProtocol, CAUsecaseProtocol, CAInjectionKey,
+          names: named(inject(key:)),
           named(keys), 
           named(label),
           named(currentValue),
@@ -46,6 +47,7 @@ struct ChatDTO {
     
 }
 
+@Repository
 protocol ChatRepositoryProtocol {
     func dataTaskAsync(dto: ChatDTO, options: [CAUsecaseOption]) async throws -> ChatDTO
 }
@@ -73,17 +75,17 @@ protocol ChatUsecaseProtocol {
     func dataTaskAsync(dto: ChatDTO?, options: [CAUsecaseOption]) async throws -> ChatDTO
  }
 
-extension CAInjectedValues {
-    var keyChat: ChatUsecaseProtocol {
-        get { Self[ChatUsecase.self] }
-        set { Self[ChatUsecase.self] = newValue }
-    }
-}
-
 @Usecase
 final class ChatUsecase: ChatUsecaseProtocol {
 
     enum Key: String, CaseIterable, PostmanKey {
         case prod, test, un, deux, trois
+    }
+}
+
+extension CAInjectedValues {
+    var keyChat: ChatUsecaseProtocol {
+        get { Self[ChatUsecase.self] }
+        set { Self[ChatUsecase.self] = newValue }
     }
 }
