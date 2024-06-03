@@ -77,24 +77,7 @@ public extension URLRequest {
         }
     }
     
-    func mapHost(_ host: String?) -> URLRequest? {
-        guard let url = self.url, let currentHost = url.host, let newHost = host else {
-            return self
-        }
-        var new = self
-        new.url = URL(string: url.absoluteString.replacingOccurrences(of: currentHost, with: newHost))
-        return new
-    }
-    
-    var caDescription: String? {
-        self.allHTTPHeaderFields?["ServiceLabel"]
-    }
-    
-    mutating func caAddServiceDescription(desc: String) {
-        self.allHTTPHeaderFields?["ServiceLabel"] = desc
-    }
-    
-    var curlCommand: String {
+    var toCURL: String {
         guard let url = self.url else { return "" }
         
         var command = "curl -X \(self.httpMethod ?? "GET") '\(url.absoluteString)'"
@@ -110,26 +93,6 @@ public extension URLRequest {
         }
         
         return command
-    }
-    
-    func debug() {
-        print("PAYLOAD:\n")
-        print("- URL: \(self)")
-        if let header = self.allHTTPHeaderFields {
-            print("- HTTP HEADER:")
-            print(" [")
-            for elem in header {
-                print("\t\(elem)")
-            }
-            print(" ]")
-        }
-        if let method = self.httpMethod {
-            print("- HTTP METHOD: \(method)")
-        }
-        if let body = self.httpBody {
-            print("- HTTP BODY:\n")
-            print(body.toPrettyJSON)
-        }
     }
 }
 

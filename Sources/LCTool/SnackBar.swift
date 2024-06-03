@@ -157,11 +157,11 @@ private struct SnackBarView: View {
 
 struct SnackBarPreview: View {
         
-    let info = SnackBarInfo(message: "Bonjour je suis un dracofeu, j'aime les tomates et je crache du feu",
+    let info = SnackBarInfo(message: "Bonjour je suis un Dracofeu, j'aime les tomates et je crache du feu",
                             image: nil,
                             backgroundColor: .red,
                             displayTime: 2)
-    let info2 = SnackBarInfo(message: "Bonjour je suis un Florizarre, j'aime les salade et fouette les arabes",
+    let info2 = SnackBarInfo(message: "Bonjour je suis un Florizarre, j'aime les salade et fouette les gens",
                              image: .init(systemName: "doc"),
                              backgroundColor: .green)
     let info3 = SnackBarInfo(message: "Bonjour je suis un Tortank, j'aime les raisins et j'arose!",

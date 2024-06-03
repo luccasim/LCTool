@@ -2,32 +2,42 @@
 //  Template: 6.0
 
 import Foundation
-import LCTool
 
-extension CAInjectedValues {
-    var key___VARIABLE_ModuleName:identifier___: ___VARIABLE_ModuleName:identifier___UsecaseProtocol {
-        get { Self[___VARIABLE_ModuleName:identifier___Usecase.self] }
-        set { Self[___VARIABLE_ModuleName:identifier___Usecase.self] = newValue }
-    }
+struct ___VARIABLE_ModuleName:identifier___DTO {
+
+    // Input
+
+    // Output
+
 }
 
-@Usecase
 protocol ___VARIABLE_ModuleName:identifier___UsecaseProtocol {
-    func dataTaskAsync(dto: ___VARIABLE_ModuleName:identifier___DTO?, options: [CAUsecaseOption]) async throws -> ___VARIABLE_ModuleName:identifier___DTO
- }
+    func dataTaskAsync(dto: ___VARIABLE_ModuleName:identifier___DTO) async throws -> ___VARIABLE_ModuleName:identifier___DTO
+}
 
-@Usecase
-final class ___VARIABLE_ModuleName:identifier___Usecase: ___VARIABLE_ModuleName:identifier___UsecaseProtocol {
+final class ___VARIABLE_ModuleName:identifier___Usecase {
     
-    // MARK: - Postman
-        
-    enum Key: String, CaseIterable, PostmanKey {
-        case prod
-    }
+    // MARK: - Dependences
+    
+    // var exampleRepository = ExampleRepository()
+    
+    init() {}
     
     // MARK: - Error
     
     enum Failure: Error {
         
+    }
+    
+    // MARK: - Task
+    
+    func dataTaskAsync(dto: ___VARIABLE_ModuleName:identifier___DTO) async throws -> ___VARIABLE_ModuleName:identifier___DTO {
+//        do {
+//            let result = try await exampleRepository.getExampleName(dto: dto)
+//            return .init(exampleResponse: result)
+//        } catch {
+//            throw error
+//        }
+        dto
     }
 }

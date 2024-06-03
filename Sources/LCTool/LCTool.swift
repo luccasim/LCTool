@@ -77,15 +77,28 @@ protocol ChatUsecaseProtocol {
 
 @Usecase
 final class ChatUsecase: ChatUsecaseProtocol {
+    
+    // @Repository(\.Chat) var repository
+    
+    func input(dto: ChatDTO?) throws -> ChatDTO? {
+        return dto
+    }
+    
+    func output(dto: ChatDTO) throws -> ChatDTO {
+        return dto
+    }
+    
+    // Errors
+    
+    enum Error {
+        
+    }
+    
+    func mapError() {
+        
+    }
 
     enum Key: String, CaseIterable, PostmanKey {
         case prod, test, un, deux, trois
-    }
-}
-
-extension CAInjectedValues {
-    var keyChat: ChatUsecaseProtocol {
-        get { Self[ChatUsecase.self] }
-        set { Self[ChatUsecase.self] = newValue }
     }
 }

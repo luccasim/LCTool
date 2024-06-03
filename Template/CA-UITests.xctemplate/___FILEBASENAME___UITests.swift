@@ -26,5 +26,4 @@ final class ___VARIABLE_ModuleName:identifier___UITests: XCTestCase {
         // Then
         app.assertAnalytics(key: "__Analytics_Key__")
     }
-    
 }
