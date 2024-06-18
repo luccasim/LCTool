@@ -12,31 +12,46 @@ import Combine
 
 public struct SnackBarInfo {
     
-    public init(message: String) {
-        self.message = message
+    public init<T: View>(
+        style: Style = .stack,
+        backgroundColor: Color? = .gray,
+        showTime: Double = 5,
+        haptic: UIImpactFeedbackGenerator.FeedbackStyle? = nil,
+        @ViewBuilder content: () -> T
+    ) {
+        self.content = AnyView(content())
+        self.displayTime = showTime
+        self.backgroundColor = backgroundColor
+        self.haptic = haptic
+        self.message = nil
         self.image = nil
-        self.backgroundColor = .gray
-        self.displayTime = 5
-        self.haptic = nil
+        self.style = style
     }
     
-    public init(message: String, 
-                image: Image? = nil,
-                backgroundColor: Color = .gray,
-                displayTime: Double = 5,
-                haptic: UIImpactFeedbackGenerator.FeedbackStyle? = nil) {
+    public init(
+        style: Style = .stack,
+        message: String,
+        image: Image? = nil,
+        backgroundColor: Color? = .gray,
+        showTime: Double = 5,
+        haptic: UIImpactFeedbackGenerator.FeedbackStyle? = nil
+    ) {
         self.message = message
         self.image = image
         self.backgroundColor = backgroundColor
-        self.displayTime = displayTime
+        self.displayTime = showTime
         self.haptic = haptic
+        self.content = nil
+        self.style = style
     }
     
-    let message: String
+    let content: AnyView?
+    let message: String?
     let image: Image?
-    let backgroundColor: Color
+    let backgroundColor: Color?
     let displayTime: Double
     let haptic: UIImpactFeedbackGenerator.FeedbackStyle?
+    let style: Style
     
     public enum Position {
         case top, bottom
@@ -66,8 +81,9 @@ public extension View {
 
 private class SnackBarVM: ObservableObject {
     
-    @Published var info: SnackBarInfo = .init(message: "", image: nil)
     @Published var infos = [OrderedSnackInfo]()
+    @Published var incommingValue: OrderedSnackInfo?
+    
     @Published var isAppear = false
     @Published var isPresentedDetail = false
 
@@ -95,6 +111,7 @@ private class SnackBarVM: ObservableObject {
     private func clearToast() {
         self.isAppear = false
         self.infos = []
+        self.incommingValue = nil
         self.isPresentedDetail = false
     }
     
@@ -108,7 +125,11 @@ private class SnackBarVM: ObservableObject {
     }
     
     private func update(info: SnackBarInfo) {
-        infos.append(.init(id: infos.count, info: info))
+        let new = OrderedSnackInfo(id: infos.count, info: info)
+        incommingValue = new
+        if new.info.style == .stack {
+            infos.append(new)
+        }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
             self.isAppear = true
             if let haptic = info.haptic {
@@ -139,7 +160,7 @@ private struct SnackBarInfoViewModifier: ViewModifier {
             content
         }
         .overlay(alignment: position == .bottom ? .bottom : .top) {
-            snackBarContent
+            stackView
         }
         .onReceive(NotificationCenter.default.publisher(for: .init("LCTool.SnackBarInfoViewModifier"))) { output in
             if let info = output.object as? SnackBarInfo {
@@ -149,53 +170,23 @@ private struct SnackBarInfoViewModifier: ViewModifier {
     }
     
     @ViewBuilder
-    private var snackBarContent: some View {
-        switch style {
-        case .one:
-            SnackBarView(info: viewModel.info)
-                .offset(y: offset)
-                .animation(.spring, value: offset)
-        case .stack:
-            SnackBarStack(viewModel: viewModel, position: position)
-                .offset(y: offset)
-                .animation(.spring, value: offset)
+    private var bannerView: some View { // transition
+        if let new = viewModel.incommingValue, new.info.style == .one {
+            SnackBarView(info: new.info)
+                .transition(.move(edge: .bottom))
+                .animation(.easeIn(duration: 0.5), value: new.id)
+        }
+    }
+    
+    @ViewBuilder
+    private var stackView: some View { // sans transition
+        if let new = viewModel.incommingValue, viewModel.isAppear {
+           SnackBarStack(viewModel: viewModel, position: position)
         }
     }
 }
 
 // MARK: - Views
-
-private struct SnackBarView: View {
-    
-    let info: SnackBarInfo
-        
-    var body: some View {
-        HStack {
-            if let image = info.image {
-                image
-                    .renderingMode(.template)
-                    .foregroundColor(.white)
-                    .frame(width: 12, height: 12)
-            }
-            
-            Text(info.message)
-                .font(.caption)
-                .fontWeight(.semibold)
-                .foregroundStyle(Color.white)
-            
-            Spacer()
-        }
-        .padding()
-        .frame(maxWidth: .infinity)
-        .background(
-            RoundedRectangle(cornerRadius: 8)
-                .fill(info.backgroundColor)
-                .opacity(0.9)
-        )
-        .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 6)
-        .padding(.horizontal, 24)
-    }
-}
 
 private struct SnackBarStack: View {
     
@@ -213,13 +204,13 @@ private struct SnackBarStack: View {
                         } label: {
                             Circle()
                                 .foregroundStyle(Color.gray.opacity(0.5))
-                                .frame(width: 24, height: 24)
+                                .frame(width: 20, height: 20)
                                 .overlay {
                                     Image(systemName: "xmark")
                                         .resizable()
                                         .renderingMode(.template)
                                         .foregroundStyle(Color.black)
-                                        .frame(width: 10, height: 10)
+                                        .frame(width: 8, height: 8)
                                 }
                                 .padding(.trailing, 24)
                         }
@@ -255,19 +246,82 @@ private struct SnackBarStack: View {
     }
 }
 
+private struct SnackBarView: View {
+    
+    let info: SnackBarInfo?
+        
+    var body: some View {
+        if let info = info {
+            if let backgroundColor = info.backgroundColor {
+                content
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(backgroundColor)
+                            .opacity(0.9)
+                    )
+                    .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 6)
+                    .padding(.horizontal, 24)
+            } else {
+                content
+            }
+        } else {
+            Color.orange.frame(width: 1, height: 1)
+        }
+    }
+    
+    private var content: some View {
+        Group {
+            if let anyView = info?.content {
+                anyView
+            } else if let message = info?.message {
+                HStack {
+                    if let image = info?.image {
+                        image
+                            .renderingMode(.template)
+                            .foregroundColor(.white)
+                            .frame(width: 12, height: 12)
+                    }
+                    
+                    Text(message)
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(Color.white)
+                    
+                    Spacer()
+                }
+            }
+        }
+    }
+}
+
 // MARK: - Preview
 
 struct SnackBarPreview: View {
     
     @State private var isPresentedSheet = false
         
-    let info = SnackBarInfo(message: "J'aime les tomates",
-                            backgroundColor: .red,
-                            displayTime: 60)
-    let info2 = SnackBarInfo(message: "J'aime les salade",
-                             image: .init(systemName: "doc"),
-                             backgroundColor: .green)
-    let info3 = SnackBarInfo(message: "J'aime les raisins!")
+    let info = SnackBarInfo(style: .one, backgroundColor: .green) {
+        Text("Hello!!")
+            .font(.callout)
+            .foregroundStyle(Color.white)
+            .multilineTextAlignment(.leading)
+    }
+    
+    let info2 = SnackBarInfo(message: "Bonjour")
+    
+    let info3 = SnackBarInfo(backgroundColor: nil) {
+        VStack {
+            HStack {
+                Image(systemName: "pencil.line")
+                Text("Sans background")
+                Spacer()
+            }
+            Text("Second Element")
+        }
+        .padding(.horizontal)
+    }
     
     var body: some View {
         actionButton
@@ -278,7 +332,7 @@ struct SnackBarPreview: View {
         Button(action: {
             NotificationCenter.snackBarNotif(info: [info, info2, info3].randomElement()!)
         }, label: {
-            Text("Send Toast")
+            Text("Send")
         })
     }
 }
