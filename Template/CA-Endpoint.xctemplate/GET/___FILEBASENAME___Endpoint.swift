@@ -4,7 +4,6 @@
 import Foundation
 import LCTool
 
-@Endpoint
 struct ___VARIABLE_ModuleName:identifier___Endpoint: Codable {
     
     // MARK: - Params

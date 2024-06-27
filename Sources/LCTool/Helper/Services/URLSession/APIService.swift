@@ -79,6 +79,8 @@ public final class APIService {
         #endif
     }
     
+    // MARK: - Fetch
+    
     public func fetchData(request: URLRequest? = nil, url: URL? = nil, path: String? = nil) async throws -> (Data, URLResponse) {
         if let request = request {
             return try await dataAsync(request: request)

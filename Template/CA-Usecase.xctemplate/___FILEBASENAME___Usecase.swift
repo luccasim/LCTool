@@ -3,6 +3,8 @@
 
 import Foundation
 
+// MARK: - Interfaces
+
 protocol ___VARIABLE_ModuleName:identifier___UsecaseProtocol {
     func dataTaskAsync(dto: ___VARIABLE_ModuleName:identifier___Usecase.DTO) async throws -> ___VARIABLE_ModuleName:identifier___Usecase.DTO
 }

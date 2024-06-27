@@ -1,15 +1,15 @@
 //___FILEHEADER___
-//  Template: 5.0
+//  Template: 6.0
 
 import XCTest
 @testable import Integration
 
 final class ___VARIABLE_ModuleName:identifier___Tests: XCTestCase {
     
-    var sut = ___FILEBASENAME___()
+    var sut: ___VARIABLE_ModuleName:identifier___Usecase!
             
     override func setUpWithError() throws {
-        self.sut = ___FILEBASENAME___()
+        
     }
     
     // MARK: - Assertion
