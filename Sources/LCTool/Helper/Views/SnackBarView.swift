@@ -182,11 +182,6 @@ struct SnackBarPreview: View {
                 .opacity(0.9)
             SnackBarView(info: .init(message: "Test"))
         }
-//        Button(action: {
-//            NotificationCenter.snackBarNotif(info: [info, info2, info3].randomElement()!)
-//        }, label: {
-//            Text("try me")
-//        })
     }
 }
 

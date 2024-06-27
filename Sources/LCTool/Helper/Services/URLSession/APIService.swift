@@ -7,16 +7,16 @@
 
 import Foundation
 
-final class APIService {
+public final class APIService {
     
-    static var shared = APIService()
+    public static var shared = APIService()
     private init() {}
     
     // MARK: - Logs
     
-    var logs = [Log]()
+    public var logs = [Log]()
     
-    struct Log {
+    public struct Log {
         var date: Date
         var request: URLRequest
         var response: URLResponse?
@@ -28,12 +28,12 @@ final class APIService {
     
     private var mockServer: (host: String?, queryParams: [String: String]?)?
     
-    func setMockServer(path: String?, queryParams: [String: String]) {
+    public func setMockServer(path: String?, queryParams: [String: String]) {
         self.mockServer = (path, queryParams)
     }
     
     private func swapMockHost(request: URLRequest) -> URLRequest {
-        guard let hostMockServer = mockServer?.host, let url = request.url, let host = url.host() else {
+        guard let hostMockServer = mockServer?.host, let url = request.url, let host = url.host else {
             return request
         }
         
@@ -53,7 +53,7 @@ final class APIService {
     
     // MARK: - Task
     
-    enum Failure: Error {
+    public enum Failure: Error {
         case missingURI
     }
     
@@ -79,7 +79,7 @@ final class APIService {
         #endif
     }
     
-    func fetchData(request: URLRequest? = nil, url: URL? = nil, path: String? = nil) async throws -> (Data, URLResponse) {
+    public func fetchData(request: URLRequest? = nil, url: URL? = nil, path: String? = nil) async throws -> (Data, URLResponse) {
         if let request = request {
             return try await dataAsync(request: request)
         }
@@ -95,7 +95,7 @@ final class APIService {
         throw Failure.missingURI
     }
         
-    func fetchJSON<T: Codable>(request: URLRequest? = nil, url: URL? = nil, path: String? = nil) async throws -> T {
+    public func fetchJSON<T: Codable>(request: URLRequest? = nil, url: URL? = nil, path: String? = nil) async throws -> T {
 
         if let request = request {
             let result = try await dataAsync(request: request)
