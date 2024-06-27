@@ -8,7 +8,9 @@
 import Foundation
 
 extension Decodable {
-    static func readPreviewFile(fileName: String) -> Self! {
+    
+    /// add the complete filename with file extension i.e example.json
+    public static func readPreviewFile(fileName: String) -> Self! {
         if let url = Bundle.main.url(forResource: fileName, withExtension: nil) {
             do {
                 let data = try Data(contentsOf: url)
