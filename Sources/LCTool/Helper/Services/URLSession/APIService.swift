@@ -33,7 +33,7 @@ public final class APIService {
     }
     
     private func swapMockHost(request: URLRequest) -> URLRequest {
-        guard let hostMockServer = mockServer?.host, let url = request.url, let host = url.host() else {
+        guard let hostMockServer = mockServer?.host, let url = request.url, let host = url.host else {
             return request
         }
         
