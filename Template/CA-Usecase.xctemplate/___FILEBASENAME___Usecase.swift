@@ -3,18 +3,12 @@
 
 import Foundation
 
-protocol ___VARIABLE_ModuleName:identifier___RepositoryProtocol {
-//    func fetch___VARIABLE_ModuleName:identifier___(dto: ___VARIABLE_ModuleName:identifier___DTO) async throws -> ___VARIABLE_ModuleName:identifier___Response
+protocol ___VARIABLE_ModuleName:identifier___UsecaseProtocol {
+    func dataTaskAsync(dto: ___VARIABLE_ModuleName:identifier___Usecase.DTO) async throws -> ___VARIABLE_ModuleName:identifier___Usecase.DTO
 }
 
-// MARK: - DTO
-
-struct ___VARIABLE_ModuleName:identifier___DTO {
-
-    // Input
-
-    // Output
-
+protocol ___VARIABLE_ModuleName:identifier___RepositoryProtocol {
+    
 }
 
 final class ___VARIABLE_ModuleName:identifier___Usecase {
@@ -27,20 +21,25 @@ final class ___VARIABLE_ModuleName:identifier___Usecase {
         self.repository = repository
     }
     
+    // MARK: - DTO
+    
+    struct DTO {
+
+        // Input
+
+        // Output
+
+    }
+    
     // MARK: - Error
     
     enum Failure: Error {
-        
+        case missingInputs
     }
     
     // MARK: - Task
-    
-    func dataTaskAsync(dto: ___VARIABLE_ModuleName:identifier___DTO) async throws -> ___VARIABLE_ModuleName:identifier___DTO {
-        do {
-//            let result = try await repository.getNationalizeName(dto: dto)
-            return .init()
-        } catch {
-            throw error
-        }
+
+    func dataTaskAsync(dto: ___VARIABLE_ModuleName:identifier___Usecase.DTO) async throws -> ___VARIABLE_ModuleName:identifier___Usecase.DTO {
+        return .init()
     }
 }
