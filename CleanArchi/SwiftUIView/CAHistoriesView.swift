@@ -11,27 +11,20 @@ struct CAHistoriesView: View {
     
     // MARK: - Parameter
     
-    @StateObject private var wsManager: CAWebserviceManager
-    var font: Font?
-    
-    init(manager: CAWebserviceManager = .shared, font: Font? = nil) {
-        _wsManager = StateObject(wrappedValue: manager)
-        self.font = font
-    }
+    var logs: [LoggerService.NetworkLog]
         
     // MARK: - Body
     
     var body: some View {
         content
-            .font(font)
     }
     
     // MARK: - Views
     
     private var content: some View {
-        ScrollView {
-            VStack(spacing: 8) {
-                ForEach(wsManager.histories.reversed(), id: \.id) {
+        ScrollView(showsIndicators: false) {
+            VStack(spacing: .tiny) {
+                ForEach(logs.reversed(), id: \.id) {
                     cell(data: $0)
                 }
             }
@@ -39,21 +32,28 @@ struct CAHistoriesView: View {
         .padding()
     }
     
-    func cell(data: CAWebserviceManager.History) -> some View {
+    func cell(data: LoggerService.NetworkLog) -> some View {
         NavigationLink {
-                CAHistoryDetailView(data: data)
-                    .font(font)
+            CAHistoryDetailView(data: data)
         } label: {
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: .tiny) {
                 HStack {
-                    Text("**\(data.serviceDescription)**")
+                    if data.mime == "png" || data.mime == "jpeg", let file = data.request.url?.lastPathComponent {
+                        Text("**\(file)**")
+                    } else {
+                        Text("**\(data.serviceDescription)**")
+                    }
+                    if let env = data.env?.uppercased() {
+                        Spacer()
+                        Text("\(env)")
+                    }
                 }
                 HStack {
                     Text("*\(data.responseDateStr)*")
                     Spacer()
                     Circle()
-                        .frame(width: 16)
-                        .foregroundColor(data.statusCode == 200 ? .green : .yellow)
+                        .frame(width: .small)
+                        .foregroundColor(statusColor(data: data))
                 }
             }
             .padding()
@@ -62,39 +62,25 @@ struct CAHistoriesView: View {
             .shadow(color: Color.black.opacity(0.06), radius: 8, x: 0, y: 4)
         }
     }
+    
+    func statusColor(data: LoggerService.NetworkLog) -> Color {
+        switch data.statusCode {
+        case 200:
+            Color.green
+        case 201...300:
+            Color.yellow
+        default:
+            Color.red
+        }
+    }
 }
 
 // MARK: - Previews
 
-struct EndpointHistoriesView_Previews: PreviewProvider {
-    
-    static var previews: some View {
-        NavigationView {
-            CAHistoriesView(manager: .preview(), font: .subheadline)
-                .navigationTitle("Historique des rêquetes")
-                .navigationBarTitleDisplayMode(.inline)
-        }
+#Preview {
+    NavigationView {
+        CAHistoriesView(logs: [])
+            .navigationTitle("Historique des rêquetes")
+            .navigationBarTitleDisplayMode(.inline)
     }
-}
-
-extension CAWebserviceManager {
-    
-    static func preview() -> CAWebserviceManager {
-        let manager = CAWebserviceManager()
-        manager.histories = (0...10).compactMap {
-            guard let url = URL(string: "https://www.test.fr/\($0)") else {
-                return nil
-            }
-            return .init(request: URLRequest(url: url),
-                         httpResponse: .init(url: url,
-                                             statusCode: $0 % 4 == 0 ? 400 : 200,
-                                             httpVersion: nil,
-                                             headerFields: ["Date": "\($0)/9/99"]),
-                         httpData: nil,
-                         httpError: nil,
-                         description: "Service \($0)")
-        }
-        return manager
-    }
-    
 }

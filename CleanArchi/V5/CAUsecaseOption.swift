@@ -14,6 +14,9 @@ enum CAUsecaseOption: Equatable {
     /// disable ReachabilityManager
     case disableReachability
     
+    /// disable Error Handler
+    case disableErrorHandler
+    
     /// disable NotificationCenter.default.post
     case disableNotificationCenter
     

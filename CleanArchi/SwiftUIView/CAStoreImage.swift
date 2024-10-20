@@ -13,29 +13,26 @@ import SwiftUI
 /// But replace / publish change only if the new data is different of the oldest stored image.
 struct CAStoreImage: View {
     
-    @StateObject fileprivate var viewModel: CAStoreImageViewModel
+    @StateObject fileprivate var viewModel = CAStoreImageViewModel()
     
     fileprivate var request: URLRequest?
-//    fileprivate var placeholder: ImageResource
+    fileprivate var placeholder: ImageResource
     
     // MARK: - Init
     
-    init(path: String?) {
+    init(path: String?, placeholder: ImageResource = .placeholderLetterF) {
         self.request = URLRequest(path: path ?? "")
-//        self.placeholder = placeholder
-        _viewModel = StateObject(wrappedValue: CAStoreImageViewModel(url: path.flatMap({URL(string: $0)})))
+        self.placeholder = placeholder
     }
     
-    init(url: URL?) {
+    init(url: URL?, placeholder: ImageResource = .placeholderLetterF) {
         self.request = URLRequest(path: url?.absoluteString ?? "")
-//        self.placeholder = placeholder
-        _viewModel = StateObject(wrappedValue: CAStoreImageViewModel(url: url))
+        self.placeholder = placeholder
     }
     
-    init(request: URLRequest?) {
+    init(request: URLRequest?, placeholder: ImageResource = .placeholderLetterF) {
         self.request = request
-//        self.placeholder = placeholder
-        _viewModel = StateObject(wrappedValue: CAStoreImageViewModel(url: request?.url))
+        self.placeholder = placeholder
     }
     
     // MARK: - Body
@@ -46,8 +43,7 @@ struct CAStoreImage: View {
                 Image(uiImage: img)
                     .resizable()
             } else {
-//                Image(placeholder)
-                Rectangle()
+                Image(placeholder)
             }
         }
         .onChange(of: request) { newValue in
@@ -71,28 +67,34 @@ struct CAStoreImage: View {
     }
 }
 
+@MainActor
 private final class CAStoreImageViewModel: ObservableObject {
     
     @Published var imageData: Data?
     
-    private var manager = CADownloadDataManager.shared
+    private var manager = CAURLSessionManager()
     
-    init(url: URL?) {
-        imageData = manager.retrieveData(url: url)
+    private func setImage(url: URL?) {
+        if let url = url, let imgData = try? Data(contentsOf: url) {
+            imageData = imgData
+        } else {
+            imageData = nil
+        }
     }
     
     func fetch(request: URLRequest?) {
-        if let request = request {
-            manager.fetchData(request: request) { result in
-                switch result {
-                case .success(let data):
-                    DispatchQueue.main.async {
-                        self.imageData = data
-                    }
-                default:
-                    break
+        if var request = request {
+            Task {
+                do {
+                    request.cachePolicy = .returnCacheDataElseLoad
+                    let result = try await manager.download(request: request)
+                    setImage(url: result)
+                } catch {
+                    debug("\(#function): \(error.localizedDescription)")
                 }
             }
+        } else {
+            imageData = nil
         }
     }
 }

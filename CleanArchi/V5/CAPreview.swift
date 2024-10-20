@@ -15,19 +15,19 @@ protocol CAPreviewProtocol {
     func inject(key: String?)
 }
 
+struct CAPreviewKey: Identifiable {
+    let label: String
+    let key: String
+    
+    var id: String { key }
+}
+
 extension CAPreviewProtocol {
     var config: [CAUsecaseOption] { get {[]} set {}}
     
     var label: String {
         String(describing: Self.Type.self).replacingOccurrences(of: "Preview.Type", with: "")
     }
-}
-
-struct CAPreviewKey: Identifiable {
-    let label: String
-    let key: String
-    
-    var id: String { key }
 }
 
 extension View {
@@ -40,7 +40,7 @@ extension View {
 }
 
 func debug(_ str: String) {
-    if ProcessInfo.processInfo.arguments.contains("-verbose") {
+    if ProcessInfo.processInfo.arguments.contains("-debug") {
         print(str)
     }
 }

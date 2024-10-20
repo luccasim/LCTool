@@ -47,35 +47,25 @@ extension WorkflowProtocol {
         nil
     }
     
-//    private func sendSnackBarIssue(type: NotificationCenter.AlertType) {
-//        if enableSnackBarHandler {
-//            NotificationCenter.show(type: type)
-//        }
-//    }
+    private func sendSnackBarIssue(type: NotificationCenter.AlertType) {
+        if enableSnackBarHandler {
+            NotificationCenter.show(type: type)
+        }
+    }
     
     private func handleDomainFailure(dto: String, error: Error) throws -> AnyPublisher<Domain, Error> {
         Future<Domain, Error> { promise in
             
             DispatchQueue.main.async {
                 switch error.toCAError {
-                case .forbiddenAccess(let request):
+                case .forbiddenAccess(let request, data: _):
                     NotificationCenter.default.post(name: .init("forbiddenAccess"), object: request)
-                case .badRequest(let data):
-                    guard data == nil else {
-                        break
-                    }
-//                    sendSnackBarIssue(type: .webserviceIssue)
                 case .missingData, .missingDTO, .requestCreate:
-                    #if !PROD
-                    CAReportManager.shared.pushLocalError(caError: error.toCAError, className: dto)
-                    #endif
-//                    sendSnackBarIssue(type: .webserviceIssue)
-//                case .webServiceIssue, .notFound:
-//                    sendSnackBarIssue(type: .webserviceIssue)
-//                case .networkIssue:
-//                    sendSnackBarIssue(type: .networkIssue)
-                case .decodableData(request: let request, error: let error, data: let data):
-                    Task { await CAReportManager.shared.sendDecodableStrapi(request: request, error: error, json: data) }
+                    sendSnackBarIssue(type: .webserviceIssue)
+                case .webServiceIssue, .notFound:
+                    sendSnackBarIssue(type: .webserviceIssue)
+                case .networkIssue:
+                    sendSnackBarIssue(type: .networkIssue)
                 default:
                     break
                 }

@@ -8,13 +8,13 @@
 import Foundation
 import SwiftUI
 
-public protocol CAEndpointProtocol {
-    associatedtype T: Codable
+protocol CAEndpointProtocol: Sendable {
+    associatedtype T: Codable, Sendable
     var request: URLRequest? { get }
     func preview() -> AnyView
 }
 
-public extension CAEndpointProtocol {
+extension CAEndpointProtocol {
     func preview() -> AnyView {
         AnyView(EndpointView(endpoint: self))
     }
@@ -24,7 +24,7 @@ private struct EndpointView: View {
     
     @State private var text = ""
     var endpoint: any CAEndpointProtocol
-    var webservice = CAURLSessionManager()
+    let webservice = CAURLSessionManager()
                     
     var body: some View {
         ScrollView {

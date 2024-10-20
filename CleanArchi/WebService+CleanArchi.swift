@@ -71,20 +71,11 @@ final class CAWebserviceManager: ObservableObject {
     private func httpStatusCode(httpResponse: HTTPURLResponse, request: URLRequest, data: Data? = nil) throws {
         switch httpResponse.statusCode {
         case 400:
-            if let data = data {
-                var json: APIError
-                do {
-                    json = try JSONDecoder().decode(APIError.self, from: data)
-                } catch {
-                    throw CAError.decodableData(request: request, error: error, data: data)
-                }
-                throw CAError.badRequest(data: json)
-            }
-            throw CAError.badRequest()
+            throw CAError.badRequest(source: data)
         case 401:
-            throw CAError.authentication
-        case 403:
-            throw CAError.forbiddenAccess(request: request)
+            throw CAError.unAuthorized(data: data)
+        case 403, 503:
+            throw CAError.forbiddenAccess(request: request, data: data)
         case 404:
             throw CAError.notFound
         case 500:
@@ -116,6 +107,8 @@ extension CAWebserviceManager {
         var httpData: Data?
         var httpError: Error?
         var id = UUID()
+        var mime: String?
+        var env = UserDefaults.standard.string(forKey: "appEnviroment")
         
         var description: String?
         
@@ -136,8 +129,7 @@ extension CAWebserviceManager {
         }
         
         var jsonData: String? {
-//            httpData?.prettyJSONString as? String
-            ""
+            httpData?.prettyJSONString as? String
         }
         
         var httpErrorDescription: String? {
@@ -162,7 +154,7 @@ extension CAWebserviceManager {
         }
         
         var requestHttpBody: String? {
-            guard let json = request.httpBody?.description else {
+            guard let json = request.httpBody?.prettyJSONString else {
                 return nil
             }
             return "\n\(json)"
@@ -172,7 +164,7 @@ extension CAWebserviceManager {
             guard let data = httpData else {
                 return ""
             }
-            return "\nDATA:\n\(data.description)"
+            return "\nDATA:\n\(data.prettyJSONString)"
         }
         
         var responseError: String {
@@ -231,7 +223,7 @@ extension CAWebserviceManager: CAWebserviceProtocol {
     ///   - completion: The response handler
     func downloadTask(request: URLRequest?, completion: @escaping (Result<URL, Error>) -> Void) {
         
-        guard let request = request?.mapToTestUIServer() else {
+        guard let request = request else {
             return completion(.failure(CAError.missingData))
         }
         
@@ -242,9 +234,7 @@ extension CAWebserviceManager: CAWebserviceProtocol {
             defer {
                 #if !PROD
                 log.printDebug(debug: self.showDebug)
-                DispatchQueue.main.async {
-                    self.histories.append(log)
-                }
+                NotificationCenter.default.post(name: .init("loggerService"), object: ("legacyWebService", log))
                 #endif
             }
             
@@ -320,9 +310,7 @@ extension CAWebserviceManager: CAWebserviceProtocol {
             defer {
                 #if !PROD
                 log.printDebug(debug: self.showDebug)
-                DispatchQueue.main.async {
-                    self.histories.append(log)
-                }
+                NotificationCenter.default.post(name: .init("loggerService"), object: ("legacyWebService", log))
                 #endif
             }
             
@@ -418,9 +406,7 @@ extension CAWebserviceManager: CAWebserviceProtocol {
             defer {
                 #if !PROD
                 log.printDebug(debug: self.showDebug)
-                DispatchQueue.main.async {
-                    self.histories.append(log)
-                }
+                NotificationCenter.default.post(name: .init("loggerService"), object: ("legacyWebService", log))
                 #endif
             }
             

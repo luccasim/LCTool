@@ -23,7 +23,7 @@ protocol WriteCodableProtocol {
 }
 
 protocol WriteTMPFileProtocol {
-    func write(tmpData: Data, fileExtension: UTType) -> URL?
+    func write(tmpData: Data, fileName: String) -> URL?
     func removeTmpDirectory()
 }
 
@@ -121,11 +121,15 @@ extension WriteFileManager: WriteTMPFileProtocol {
             .appendingPathComponent("tmp")
     }
     
-    func write(tmpData: Data, fileExtension: UTType = .jpeg) -> URL? {
+    func write(tmpData: Data, fileName: String) -> URL? {
         
         let tmpFileNumber = UserDefaults.standard.integer(forKey: "tmpFile")
-        let fileURL = tmpDirectory.appendingPathComponent(tmpFileNumber.description)
-            .appendingPathExtension(for: fileExtension)
+        let fileName = fileName.components(separatedBy: ".")
+        let name = fileName.first
+        let ext = fileName.last.flatMap({UTType(filenameExtension: $0)})
+        
+        let fileURL = tmpDirectory.appendingPathComponent(name ?? tmpFileNumber.description)
+            .appendingPathExtension(for: ext ?? .jpeg)
         
         do {
             

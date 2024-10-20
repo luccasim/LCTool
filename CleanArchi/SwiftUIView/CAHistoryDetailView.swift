@@ -11,7 +11,7 @@ struct CAHistoryDetailView: View {
     
     // MARK: - Parameter
     
-    let data: CAWebserviceManager.History
+    let data: LoggerService.NetworkLog
             
     // MARK: - Body
     
@@ -33,6 +33,9 @@ struct CAHistoryDetailView: View {
             }
             
             if let error = data.httpErrorDescription {
+                if let data = data.errorData {
+                    responseCard(text: data, title: "DATA")
+                }
                 responseCard(text: error, title: "ERROR")
             }
         }
@@ -104,30 +107,4 @@ struct CAHistoryDetailView: View {
             }
         }
     }
-}
-
-// MARK: - Previews
-
-struct EndpointHistoryDetailView_Previews: PreviewProvider {
-    static var previews: some View {
-        NavigationView {
-            CAHistoryDetailView(data: .preview())
-        }
-    }
-}
-
-extension CAWebserviceManager.History {
-    // swiftlint:disable force_unwrapping
-    static func preview() -> Self {
-        let url = URL(string: "www.cleanArchi.com")!
-        return .init(request: URLRequest(url: url),
-                     httpResponse: .init(url: url,
-                                         statusCode: 200,
-                                         httpVersion: nil,
-                                         headerFields: ["Date": "9/9/99"]),
-                     httpData: nil,
-                     httpError: nil,
-                     description: "Service Preview")
-    }
-    // swiftlint:enable force_unwrapping
 }

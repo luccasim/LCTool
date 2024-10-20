@@ -16,7 +16,7 @@ protocol ExpireCacheManagerProtocol {
 final class ExpireCacheManager {
     
     static let shared = ExpireCacheManager()
-    fileprivate var cache = [String: (date: Date?, data: Any?)]()
+    private var cache = [String: (date: Date?, data: Any?)]()
 }
 
 extension ExpireCacheManager: ExpireCacheManagerProtocol {

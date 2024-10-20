@@ -80,7 +80,7 @@ final class AppFilesManager {
             return
         }
         
-        if let additionalPath = onPath {
+        if let additionalPath = onPath?.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) {
             documentsUrl = documentsUrl.appendingPathComponent(additionalPath)
         }
 

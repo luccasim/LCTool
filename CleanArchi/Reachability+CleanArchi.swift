@@ -17,7 +17,7 @@ public final class ReachabilityManager: CAReachabilityProtocol {
     
     // MARK: - Properties
     
-    public static var shared = ReachabilityManager()
+    public static let shared = ReachabilityManager()
     
     func isConnectedToNetwork() -> Bool {
 

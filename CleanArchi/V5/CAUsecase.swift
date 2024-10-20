@@ -7,16 +7,12 @@
 
 import Foundation
 
-protocol CAUsecaseProtocol: AnyObject {
+protocol CAUsecaseProtocol: AnyObject, Sendable {
     
     associatedtype DTO
     
     var reachabilityManager: CAReachabilityProtocol { get }
-    var notificationManager: CANotificationProtocol { get }
-    var reportManager: CAReportProtocol { get }
-    var storeManager: CAStoreManager { get }
-    
-    var config: [CAUsecaseOption] { get set }
+    var storeManager: CAStoreService { get }
     
     func input(dto: DTO?) throws -> DTO?
     func output(dto: DTO) throws -> DTO
@@ -30,9 +26,7 @@ protocol CAUsecaseProtocol: AnyObject {
 extension CAUsecaseProtocol {
     
     var reachabilityManager: CAReachabilityProtocol { ReachabilityManager.shared }
-    var notificationManager: CANotificationProtocol { CANotificationManager.shared }
-    var reportManager: CAReportProtocol { CAReportManager.shared }
-    var storeManager: CAStoreManager { CAStoreManager.shared }
+    var storeManager: CAStoreService { CAStoreService() }
     
     func input(dto: DTO?) throws -> DTO? { dto }
     func output(dto: DTO) throws -> DTO { dto }
@@ -46,44 +40,9 @@ extension CAUsecaseProtocol {
             throw CAError.networkIssue
         }
     }
-    
-    private func sendSnackBarIssue(type: CANotificationManager.AlertType, options: [CAUsecaseOption]) {
-        if !options.contains(.disableSnackBar), !options.contains(.disableNotificationCenter) {
-//            notificationManager.alert(type: type)
-        }
-    }
-    
-    @MainActor
-    private func handleError(error: Error, dto: String, options: [CAUsecaseOption]) async -> Error {
-        switch error.toCAError {
-        case .forbiddenAccess(let request):
-            if !options.contains(.disableNotificationCenter) {
-                notificationManager.post(id: "forbiddenAccess", value: request)
-            }
-        case .badRequest(let data):
-            guard data == nil else {
-                break
-            }
-            sendSnackBarIssue(type: .webserviceIssue, options: options)
-        case .missingData, .missingDTO, .requestCreate:
-            reportManager.pushLocalError(caError: error.toCAError, className: dto)
-            sendSnackBarIssue(type: .webserviceIssue, options: options)
-        case .webServiceIssue, .notFound:
-            sendSnackBarIssue(type: .webserviceIssue, options: options)
-        case .networkIssue:
-            sendSnackBarIssue(type: .networkIssue, options: options)
-        case .decodableData(request: let request, error: let error, data: let data):
-            Task { await reportManager.sendDecodableStrapi(request: request, error: error, json: data) }
-        case .timeOut:
-            break // report ?
-        default:
-            break
-        }
-        return error
-    }
-    
+        
     func dataTaskAsync(dto: DTO?, options: [CAUsecaseOption]) async throws -> DTO {
-        let taskOptions = self.config + options
+        let taskOptions = options
         
         do {
             let input = try input(dto: dto)
@@ -92,8 +51,7 @@ extension CAUsecaseProtocol {
             let output = try output(dto: data)
             return output
         } catch {
-            let caError = stdErr(error: error)
-            throw await handleError(error: caError, dto: String(describing: Self.Type.self), options: taskOptions)
+            throw await FreeErrorHandler().handle(usecase: self, error: error, options: options)
         }
     }
 }
