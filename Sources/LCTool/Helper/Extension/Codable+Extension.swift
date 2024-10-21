@@ -22,3 +22,22 @@ extension Decodable {
         return nil
     }
 }
+
+extension Encodable {
+    
+    public var prettyJSON: String? {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .prettyPrinted
+
+        do {
+            let jsonData = try encoder.encode(self)
+            if let jsonString = String(data: jsonData, encoding: .utf8) {
+                return jsonString
+            }
+        } catch {
+            print("Erreur lors de l'encodage JSON : \(error)")
+        }
+
+        return nil
+    }
+}

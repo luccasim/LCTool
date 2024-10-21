@@ -8,7 +8,7 @@
 import Foundation
 import LocalAuthentication
 
-final class BiometricService {
+public final class BiometricService {
     
     let localizedReason: String
     
@@ -29,20 +29,9 @@ final class BiometricService {
 
 // MARK: - Biometric
 
-extension BiometricService: FreeBiometricProtocol {
+public extension BiometricService {
     
     func biometricCheck() async throws -> Bool {
         try await self.biometricChecking()
-    }
-    
-    func biometricType() -> BiometricType {
-        switch self.biometricType(context: .init()) {
-        case .faceID:
-            return .faceID
-        case .touchID:
-            return .touchID
-        default:
-            return .none
-        }
     }
 }

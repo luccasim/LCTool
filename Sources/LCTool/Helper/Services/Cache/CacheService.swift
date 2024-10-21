@@ -7,11 +7,11 @@
 
 import Foundation
 
-actor CacheService {
+public actor CacheService {
     
     private var cache = NSCache<NSString, Entry>()
     
-    actor Entry {
+    public actor Entry {
         let value: Sendable
         let expireDate: Date?
         
@@ -54,7 +54,3 @@ actor CacheService {
         self.cache.removeAllObjects()
     }
 }
-
-// MARK: - Cache
-
-extension CacheService: FreeCacheProtocol {}

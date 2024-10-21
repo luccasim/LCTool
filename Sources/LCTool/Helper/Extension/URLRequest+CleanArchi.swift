@@ -7,18 +7,13 @@
 
 import Foundation
 
-extension URLRequest {
+public extension URLRequest {
     
     enum HTTPMethod: String {
         case get, put, post, delete
     }
     
     enum BodyForm {
-        /// Deprecated
-        case json(Data?)
-        /// Deprecated
-        case encoded(Data?)
-        
         case raw(json: Codable?)
         case urlEncoded([String: String]?)
         case multiform([(key: String, url: URL)])
@@ -57,14 +52,6 @@ extension URLRequest {
         var httpHeader = header
         
         switch bodyForm {
-        case .json(let data):
-            httpHeader["Content-Type"] = "application/json"
-            self.allHTTPHeaderFields = httpHeader
-            self.httpBody = data
-        case .encoded(let data):
-            httpHeader["Content-Type"] = "application/x-www-form-urlencoded"
-            self.allHTTPHeaderFields = httpHeader
-            self.httpBody = data
         case .multiform(let data):
             let fileForm = MultiFormData(files: data)
             httpHeader["Content-Type"] = fileForm.toContentType
@@ -89,23 +76,6 @@ extension URLRequest {
         }
     }
     
-    func mapHost(_ host: String?) -> URLRequest? {
-        guard let url = self.url, let currentHost = url.host, let newHost = host else {
-            return self
-        }
-        var new = self
-        new.url = URL(string: url.absoluteString.replacingOccurrences(of: currentHost, with: newHost))
-        return new
-    }
-    
-    var caDescription: String? {
-        self.allHTTPHeaderFields?["ServiceLabel"]
-    }
-    
-    mutating func caAddServiceDescription(desc: String) {
-        self.allHTTPHeaderFields?["ServiceLabel"] = desc
-    }
-    
     var curlCommand: String {
         guard let url = self.url else { return "" }
         
@@ -122,26 +92,6 @@ extension URLRequest {
         }
         
         return command
-    }
-    
-    func debug() {
-        print("PAYLOAD:\n")
-        print("- URL: \(self)")
-        if let header = self.allHTTPHeaderFields {
-            print("- HTTP HEADER:")
-            print(" [")
-            for elem in header {
-                print("\t\(elem)")
-            }
-            print(" ]")
-        }
-        if let method = self.httpMethod {
-            print("- HTTP METHOD: \(method)")
-        }
-        if let body = self.httpBody {
-            print("- HTTP BODY:\n")
-            print(body.toPrettyJSON)
-        }
     }
 }
 
@@ -213,7 +163,7 @@ private struct MultiFormData {
     }
 }
 
-fileprivate extension Data {
+public extension Data {
     
     mutating func append(_ string: String) {
         if let data = string.data(using: .utf8) {

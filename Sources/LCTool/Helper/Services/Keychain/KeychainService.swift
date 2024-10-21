@@ -9,19 +9,7 @@ import Security
 import Foundation
 import LocalAuthentication
 
-protocol KeychainServiceProtocol {
-    // Access with Biometric
-    func addCredentialWithBiometric(server: String, credentials: KeychainService.Credentials) throws
-    func getCredentialWithBiometric(server: String) throws -> KeychainService.Credentials
-    func deleteCredentialWithBiometric(server: String) throws
-    
-    // Store as Generic
-    func get(forKey: String) -> String?
-    func set(value: String?, forKey: String)
-    func delete(forKey: String)
-}
-
-final class KeychainService {
+public final class KeychainService: Sendable {
     
     static let shared = KeychainService()
     
@@ -35,6 +23,11 @@ final class KeychainService {
     struct Credentials {
         var username: String
         var password: String
+        var withBiometricCheck = true
+    }
+    
+    enum Failure: Error {
+        case notAuthorized
     }
     
     struct KeychainError: Error {
@@ -45,15 +38,26 @@ final class KeychainService {
         }
     }
     
-    func addCredentialWithBiometric(server: String, credentials: Credentials) throws {
+    func addCredentialWithBiometric(server: String, credentials: Credentials) async throws {
         guard let pwd = credentials.password.data(using: String.Encoding.utf8) else {
             return
         }
         
         let context = LAContext()
+        
+        if credentials.withBiometricCheck {
+            let result = try await context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics,
+                                                          localizedReason: "Autoriser l’application à utiliser Face ID")
+            
+            guard result else {
+                return
+            }
+        }
+        
+        try? deleteCredentialWithBiometric(server: server)
         let access = SecAccessControlCreateWithFlags(nil,
                                                      kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly,
-                                                     .userPresence,
+                                                     .biometryCurrentSet,
                                                      nil)
         
         let query: [String: Any] = [kSecClass as String: kSecClassInternetPassword,
@@ -69,27 +73,33 @@ final class KeychainService {
         }
     }
     
-    func getCredentialWithBiometric(server: String) throws -> Credentials {
+    func getCredentialWithBiometric(server: String) async throws -> Credentials {
         
         let context = LAContext()
-        let query: [String: Any] = [kSecClass as String: kSecClassInternetPassword,
-                                    kSecAttrServer as String: server,
-                                    kSecMatchLimit as String: kSecMatchLimitOne,
-                                    kSecReturnAttributes as String: true,
-                                    kSecUseAuthenticationContext as String: context,
-                                    kSecReturnData as String: true]
-
-        var item: CFTypeRef?
-        let status = SecItemCopyMatching(query as CFDictionary, &item)
-        
-        guard let existingItem = item as? [String : Any],
-            let passwordData = existingItem[kSecValueData as String] as? Data,
-            let password = String(data: passwordData, encoding: String.Encoding.utf8),
-            let account = existingItem[kSecAttrAccount as String] as? String
-        else {
-            throw KeychainError(status: errSecInternalError)
+        let result = try await context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics,
+                                                      localizedReason: "Autoriser l’application à utiliser Face ID")
+        if result {
+            let query: [String: Any] = [kSecClass as String: kSecClassInternetPassword,
+                                        kSecAttrServer as String: server,
+                                        kSecMatchLimit as String: kSecMatchLimitOne,
+                                        kSecReturnAttributes as String: true,
+                                        kSecUseAuthenticationContext as String: context,
+                                        kSecReturnData as String: true]
+            
+            var item: CFTypeRef?
+            _ = SecItemCopyMatching(query as CFDictionary, &item)
+            
+            guard let existingItem = item as? [String: Any],
+                  let passwordData = existingItem[kSecValueData as String] as? Data,
+                  let password = String(data: passwordData, encoding: String.Encoding.utf8),
+                  let account = existingItem[kSecAttrAccount as String] as? String
+            else {
+                throw KeychainError(status: errSecInternalError)
+            }
+            return .init(username: account, password: password)
+        } else {
+            throw Failure.notAuthorized
         }
-        return .init(username: account, password: password)
     }
     
     /// Deletes credentials for the given server.
@@ -157,7 +167,7 @@ final class KeychainService {
     }
 }
 
-extension KeychainService: KeychainServiceProtocol {
+public extension KeychainService {
     
     func get(forKey: String) -> String? {
         return getGenericPassword(key: forKey)

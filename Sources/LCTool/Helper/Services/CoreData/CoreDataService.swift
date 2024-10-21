@@ -8,7 +8,7 @@
 import Foundation
 import CoreData
 
-final class CoreDataService: Sendable {
+public final class CoreDataService: Sendable {
     
     // MARK: - Properties
     
@@ -89,20 +89,4 @@ final class CoreDataService: Sendable {
             }
         }
     }
-}
-
-// MARK: - CoreData
-
-extension CoreDataService: FreeCoreDataServiceProtocol {
-    
-    static let shared = CoreDataService(dataModelFileName: "MonCompteFree")
-
-    static let preview = {
-        #if DEBUG
-        var shared = CoreDataService(dataModelFileName: "MonCompteFree", inMemory: true)
-        #else
-        var shared = CoreDataService(dataModelFileName: "MonCompteFree")
-        #endif
-        return shared
-    }()
 }
